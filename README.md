@@ -59,6 +59,13 @@ interface with hand-drawn tranquil nature scenes.
 
 ## Getting started
 
+### Prebuilt APK
+
+Download the latest build from [GitHub Releases](https://github.com/Sora-Amagiri/MedsMan/releases/latest).
+The published APK is debug-signed for direct installation and is not Play Store-ready.
+
+### Build from source
+
 ```bash
 git clone https://github.com/Sora-Amagiri/MedsMan.git
 cd MedsMan
