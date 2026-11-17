@@ -1,0 +1,331 @@
+package com.sora.medsman.notification
+
+import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import com.sora.medsman.MainActivity
+import com.sora.medsman.R
+import com.sora.medsman.data.model.Schedule
+import java.util.Calendar
+
+object NotificationHelper {
+
+    const val CHANNEL_DOSAGE_ID = "meds_dosage_channel"
+    const val CHANNEL_REFILL_ID = "meds_refill_channel"
+
+    const val ACTION_TRIGGER_DOSAGE = "com.sora.medsman.ACTION_TRIGGER_DOSAGE"
+    const val ACTION_TAKE_MEDICATION = "com.sora.medsman.ACTION_TAKE_MEDICATION"
+    const val ACTION_SKIP_MEDICATION = "com.sora.medsman.ACTION_SKIP_MEDICATION"
+    const val ACTION_SNOOZE_MEDICATION = "com.sora.medsman.ACTION_SNOOZE_MEDICATION"
+
+    const val EXTRA_MEDICATION_ID = "extra_medication_id"
+    const val EXTRA_SCHEDULE_ID = "extra_schedule_id"
+    const val EXTRA_MEDICATION_NAME = "extra_medication_name"
+    const val EXTRA_DOSAGE = "extra_dosage"
+    const val EXTRA_SCHEDULED_TIME = "extra_scheduled_time"
+    const val EXTRA_ORIGINAL_SCHEDULED_TIME = "extra_original_scheduled_time"
+
+    fun createNotificationChannels(context: Context) {
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val dosageChannel = NotificationChannel(
+            CHANNEL_DOSAGE_ID,
+            "Medication Reminders",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Reminders to take scheduled medication doses"
+            enableVibration(true)
+        }
+
+        val refillChannel = NotificationChannel(
+            CHANNEL_REFILL_ID,
+            "Refill Alerts",
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Alerts when medication inventory is low"
+        }
+
+        notificationManager.createNotificationChannel(dosageChannel)
+        notificationManager.createNotificationChannel(refillChannel)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun scheduleDosageAlarm(
+        context: Context,
+        schedule: Schedule,
+        medicationName: String,
+        dosage: String
+    ) {
+        if (!schedule.isEnabled || !schedule.reminderEnabled) return
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val triggerTime = calculateNextTriggerTime(schedule.timeOfDay, schedule.daysOfWeek)
+
+        val intent = Intent(context, DosageAlarmReceiver::class.java).apply {
+            action = ACTION_TRIGGER_DOSAGE
+            putExtra(EXTRA_MEDICATION_ID, schedule.medicationId)
+            putExtra(EXTRA_SCHEDULE_ID, schedule.id)
+            putExtra(EXTRA_MEDICATION_NAME, medicationName)
+            putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_SCHEDULED_TIME, triggerTime)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            schedule.id.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerTime,
+                        pendingIntent
+                    )
+                } else {
+                    alarmManager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerTime,
+                        pendingIntent
+                    )
+                }
+            } else {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
+                )
+            }
+        } catch (_: Exception) {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        }
+    }
+
+    fun snoozeDosageAlarm(
+        context: Context,
+        medicationId: Long,
+        scheduleId: Long,
+        medicationName: String,
+        dosage: String,
+        minutes: Int = 15,
+        originalScheduledTime: Long = System.currentTimeMillis()
+    ) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val triggerTime = System.currentTimeMillis() + (minutes * 60 * 1000L)
+
+        val intent = Intent(context, DosageAlarmReceiver::class.java).apply {
+            action = ACTION_TRIGGER_DOSAGE
+            putExtra(EXTRA_MEDICATION_ID, medicationId)
+            putExtra(EXTRA_SCHEDULE_ID, scheduleId)
+            putExtra(EXTRA_MEDICATION_NAME, medicationName)
+            putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_SCHEDULED_TIME, triggerTime)
+            putExtra(EXTRA_ORIGINAL_SCHEDULED_TIME, originalScheduledTime)
+        }
+
+        val requestCode = (scheduleId.toInt() * 1000) + 99
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
+    }
+
+    fun cancelDosageAlarm(context: Context, scheduleId: Long) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, DosageAlarmReceiver::class.java).apply {
+            action = ACTION_TRIGGER_DOSAGE
+        }
+        // Cancel both the daily alarm and any pending 15-minute snooze alarm.
+        val requestCodes = listOf(
+            scheduleId.toInt(),
+            (scheduleId.toInt() * 1000) + 99
+        )
+        requestCodes.forEach { requestCode ->
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            if (pendingIntent != null) {
+                alarmManager.cancel(pendingIntent)
+                pendingIntent.cancel()
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun showDosageNotification(
+        context: Context,
+        medicationId: Long,
+        scheduleId: Long,
+        medicationName: String,
+        dosage: String,
+        scheduledTime: Long
+    ) {
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val contentIntent = Intent(context, MainActivity::class.java)
+        val contentPendingIntent = PendingIntent.getActivity(
+            context,
+            scheduleId.toInt(),
+            contentIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val takeIntent = Intent(context, DosageAlarmReceiver::class.java).apply {
+            action = ACTION_TAKE_MEDICATION
+            putExtra(EXTRA_MEDICATION_ID, medicationId)
+            putExtra(EXTRA_SCHEDULE_ID, scheduleId)
+            putExtra(EXTRA_MEDICATION_NAME, medicationName)
+            putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_SCHEDULED_TIME, scheduledTime)
+            putExtra(EXTRA_ORIGINAL_SCHEDULED_TIME, scheduledTime)
+        }
+        val takePendingIntent = PendingIntent.getBroadcast(
+            context,
+            (scheduleId.toInt() * 10) + 1,
+            takeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val skipIntent = Intent(context, DosageAlarmReceiver::class.java).apply {
+            action = ACTION_SKIP_MEDICATION
+            putExtra(EXTRA_MEDICATION_ID, medicationId)
+            putExtra(EXTRA_SCHEDULE_ID, scheduleId)
+            putExtra(EXTRA_MEDICATION_NAME, medicationName)
+            putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_SCHEDULED_TIME, scheduledTime)
+            putExtra(EXTRA_ORIGINAL_SCHEDULED_TIME, scheduledTime)
+        }
+        val skipPendingIntent = PendingIntent.getBroadcast(
+            context,
+            (scheduleId.toInt() * 10) + 2,
+            skipIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val snoozeIntent = Intent(context, DosageAlarmReceiver::class.java).apply {
+            action = ACTION_SNOOZE_MEDICATION
+            putExtra(EXTRA_MEDICATION_ID, medicationId)
+            putExtra(EXTRA_SCHEDULE_ID, scheduleId)
+            putExtra(EXTRA_MEDICATION_NAME, medicationName)
+            putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_SCHEDULED_TIME, scheduledTime)
+            putExtra(EXTRA_ORIGINAL_SCHEDULED_TIME, scheduledTime)
+        }
+        val snoozePendingIntent = PendingIntent.getBroadcast(
+            context,
+            (scheduleId.toInt() * 10) + 3,
+            snoozeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_DOSAGE_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Time for $medicationName ($dosage)")
+            .setContentText("It's time to take your scheduled dose of $medicationName.")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setAutoCancel(true)
+            .setContentIntent(contentPendingIntent)
+            .addAction(0, "Take", takePendingIntent)
+            .addAction(0, "Skip", skipPendingIntent)
+            .addAction(0, "Snooze 15m", snoozePendingIntent)
+            .build()
+
+        notificationManager.notify(scheduleId.toInt(), notification)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun showRefillNotification(
+        context: Context,
+        medicationId: Long,
+        medicationName: String,
+        currentStock: Int
+    ) {
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val intent = Intent(context, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            (medicationId.toInt() * 100) + 5,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_REFILL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Low Refill Alert: $medicationName")
+            .setContentText("Only $currentStock items remaining in inventory. Please request a refill.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        notificationManager.notify((medicationId.toInt() * 100) + 5, notification)
+    }
+
+    fun cancelNotification(context: Context, notificationId: Int) {
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(notificationId)
+    }
+
+    private fun calculateNextTriggerTime(timeOfDay: String, daysOfWeek: List<Int>): Long {
+        val parts = timeOfDay.split(":")
+        val hour = parts.getOrNull(0)?.toIntOrNull() ?: 8
+        val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+
+        val now = Calendar.getInstance()
+        val target = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        // Use a small margin so a re-arm performed while the current alarm is
+        // firing cannot schedule itself again for the same occurrence.
+        if (target.timeInMillis <= now.timeInMillis + 5_000L) {
+            target.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        if (daysOfWeek.isNotEmpty() && daysOfWeek.size < 7) {
+            for (step in 0..7) {
+                val calDay = target.get(Calendar.DAY_OF_WEEK)
+                val modelDay = if (calDay == Calendar.SUNDAY) 7 else calDay - 1
+                if (daysOfWeek.contains(modelDay)) {
+                    break
+                }
+                target.add(Calendar.DAY_OF_YEAR, 1)
+            }
+        }
+
+        return target.timeInMillis
+    }
+}
