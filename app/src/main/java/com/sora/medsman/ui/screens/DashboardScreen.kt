@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.sora.medsman.R
 import com.sora.medsman.data.model.TakeStatus
 import com.sora.medsman.data.model.UserProfile
+import com.sora.medsman.ui.components.AboutSheet
 import com.sora.medsman.ui.components.DosageScheduleCard
 import com.sora.medsman.ui.components.NatureHeaderCard
 import com.sora.medsman.ui.components.UserProfileSheet
@@ -68,6 +70,7 @@ fun DashboardScreen(
 
     var selectedFilter by rememberSaveable { mutableStateOf(ScheduleFilter.ALL) }
     var showProfileSheet by rememberSaveable { mutableStateOf(false) }
+    var showAboutSheet by rememberSaveable { mutableStateOf(false) }
 
     val userProfile = (profileState as? ProfileUiState.Success)?.userProfile ?: UserProfile()
     val dashboardSummary = (dashboardState as? DashboardUiState.Success)?.summary ?: DashboardSummary()
@@ -109,6 +112,13 @@ fun DashboardScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showAboutSheet = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = stringResource(R.string.about_title),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     IconButton(onClick = { showProfileSheet = true }) {
                         Box(
                             modifier = Modifier
@@ -243,6 +253,10 @@ fun DashboardScreen(
                 },
                 onDismiss = { showProfileSheet = false }
             )
+        }
+
+        if (showAboutSheet) {
+            AboutSheet(onDismiss = { showAboutSheet = false })
         }
     }
 }

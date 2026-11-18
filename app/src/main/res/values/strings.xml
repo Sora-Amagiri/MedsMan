@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">MedsMan</string>
+    <string name="about_title">About MedsMan</string>
+    <string name="about_close">Close</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_description">A calm, local-first medication manager for daily doses, pill inventory, refill alerts, and adherence history.</string>
+    <string name="about_view_source">View source on GitHub</string>
+    <string name="about_view_source_subtitle">Browse the code, releases, and documentation</string>
+    <string name="about_report_issue">Report an issue</string>
+    <string name="about_report_issue_subtitle">Report bugs or suggest improvements</string>
+    <string name="about_privacy">Your medication data stays on this device. No account and no cloud sync.</string>
+    <string name="about_disclaimer">MedsMan is a personal tracking tool, not medical advice. Always follow your clinician\'s instructions.</string>
 </resources>
