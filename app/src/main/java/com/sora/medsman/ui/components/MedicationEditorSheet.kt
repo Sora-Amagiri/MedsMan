@@ -1,5 +1,6 @@
 package com.sora.medsman.ui.components
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -31,7 +34,6 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private val ValidTimePattern = Regex("^([01]\\d|2[0-3]):[0-5]\\d$")
 private val FormOptions = listOf("Tablet", "Capsule", "Liquid", "Injection", "Other")
 private val ColorOptions = listOf(
     "#2D6A4F",
@@ -80,18 +82,21 @@ fun MedicationEditorSheet(
                 ?: listOf("08:00")
         )
     }
-    var newTime by rememberSaveable { mutableStateOf("") }
+    var showTimePicker by rememberSaveable { mutableStateOf(false) }
     var showDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
 
-    val normalizedNewTime = newTime.trim()
-    val canAddTime = ValidTimePattern.matches(normalizedNewTime) &&
-        normalizedNewTime !in reminderTimes
+    val context = LocalContext.current
+    val is24HourFormat = remember(context) { DateFormat.is24HourFormat(context) }
+    val timePickerState = rememberTimePickerState(
+        initialHour = 8,
+        initialMinute = 0,
+        is24Hour = is24HourFormat
+    )
 
     fun addReminderTime(time: String) {
         val trimmed = time.trim()
-        if (ValidTimePattern.matches(trimmed) && trimmed !in reminderTimes) {
+        if (trimmed !in reminderTimes) {
             reminderTimes = (reminderTimes + trimmed).sorted()
-            newTime = ""
         }
     }
 
@@ -238,11 +243,11 @@ fun MedicationEditorSheet(
                         InputChip(
                             selected = true,
                             onClick = { reminderTimes = reminderTimes - time },
-                            label = { Text(displayTime(time)) },
+                            label = { Text(displayTime(time, is24HourFormat)) },
                             trailingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = "Remove $time",
+                                    contentDescription = "Remove ${displayTime(time, is24HourFormat)}",
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -251,27 +256,18 @@ fun MedicationEditorSheet(
                 }
             }
 
-            Row(
+            OutlinedButton(
+                onClick = { showTimePicker = true },
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                shape = RoundedCornerShape(14.dp)
             ) {
-                OutlinedTextField(
-                    value = newTime,
-                    onValueChange = { newTime = it.take(5) },
-                    label = { Text("Time (24h)") },
-                    placeholder = { Text("08:00") },
-                    singleLine = true,
-                    isError = newTime.isNotBlank() && !ValidTimePattern.matches(normalizedNewTime),
-                    modifier = Modifier.weight(1f)
+                Icon(
+                    imageVector = Icons.Filled.AccessTime,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
                 )
-                Button(
-                    onClick = { addReminderTime(newTime) },
-                    enabled = canAddTime,
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    Text("Add")
-                }
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Choose time")
             }
 
             val quickTimes = QuickTimes.filter { it !in reminderTimes }
@@ -280,7 +276,7 @@ fun MedicationEditorSheet(
                     quickTimes.forEach { time ->
                         AssistChip(
                             onClick = { addReminderTime(time) },
-                            label = { Text("+ ${displayTime(time)}") }
+                            label = { Text("+ ${displayTime(time, is24HourFormat)}") }
                         )
                     }
                 }
@@ -399,6 +395,38 @@ fun MedicationEditorSheet(
         }
     }
 
+    if (showTimePicker) {
+        val selectedTime = String.format(
+            Locale.US,
+            "%02d:%02d",
+            timePickerState.hour,
+            timePickerState.minute
+        )
+
+        TimePickerDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        addReminderTime(selectedTime)
+                        showTimePicker = false
+                    },
+                    enabled = selectedTime !in reminderTimes
+                ) {
+                    Text("Add")
+                }
+            },
+            title = { Text("Reminder time") },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            TimePicker(state = timePickerState)
+        }
+    }
+
     if (showDeleteConfirmation && existing != null && onDelete != null) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
@@ -487,9 +515,12 @@ private fun ColorSwatch(
     }
 }
 
-private fun displayTime(time24: String): String = try {
+private fun displayTime(time24: String, is24Hour: Boolean): String = try {
     LocalTime.parse(time24).format(
-        DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault())
+        DateTimeFormatter.ofPattern(
+            if (is24Hour) "HH:mm" else "h:mm a",
+            Locale.getDefault()
+        )
     )
 } catch (_: Exception) {
     time24
