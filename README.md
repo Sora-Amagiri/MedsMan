@@ -32,6 +32,7 @@ interface with hand-drawn tranquil nature scenes.
 ### App-wide
 - Adaptive navigation: bottom bar on phones, navigation rail on medium windows,
   permanent drawer on expanded windows
+- Custom adaptive leaf-capsule launcher icon with monochrome themed-icon support
 - Navigation 3 state-driven back stack; system back returns to Today
 - All data stored locally in Room
 - Dosage reminders via `AlarmManager`, with Take / Skip / Snooze notification actions
@@ -48,7 +49,7 @@ interface with hand-drawn tranquil nature scenes.
 | State | Coroutines, `StateFlow`, ViewModel |
 | Persistence | Room (KSP) |
 | Reminders | `AlarmManager` + `BroadcastReceiver` + notifications |
-| Build | Gradle 9.6, AGP 9.5, KSP |
+| Build | Gradle 9.9, AGP 9.5, KSP |
 
 ## Requirements
 
