@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import com.sora.medsman.R
 import com.sora.medsman.ui.theme.MedsManTheme
 
-// TODO: Make the GitHub repository public before publishing this release.
 private const val GITHUB_REPOSITORY = "https://github.com/Sora-Amagiri/MedsMan"
 private const val GITHUB_ISSUES = "$GITHUB_REPOSITORY/issues"
 private const val GITHUB_LICENSE = "$GITHUB_REPOSITORY/blob/main/LICENSE"
