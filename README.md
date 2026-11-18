@@ -1,5 +1,7 @@
 # MedsMan
 
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
 A calm, local-first medication manager for Android. MedsMan keeps daily doses, pill
 inventory, refill alerts, and adherence history in one place, wrapped in a Material 3
 interface with hand-drawn tranquil nature scenes.
@@ -33,6 +35,7 @@ interface with hand-drawn tranquil nature scenes.
 - Adaptive navigation: bottom bar on phones, navigation rail on medium windows,
   permanent drawer on expanded windows
 - Custom adaptive leaf-capsule launcher icon with monochrome themed-icon support
+- About sheet with version, GitHub source, issue reporting, and license links
 - Navigation 3 state-driven back stack; system back returns to Today
 - All data stored locally in Room
 - Dosage reminders via `AlarmManager`, with Take / Skip / Snooze notification actions
@@ -135,3 +138,10 @@ errors.
 - Notifications require the runtime notification permission; without it, reminders
   are scheduled but silent.
 - Cloud backup, export, and multi-device sync are not implemented.
+
+## License
+
+MedsMan is released under the [Apache License 2.0](LICENSE).
+Copyright 2026 Sora-Amagiri.
+
+Third-party libraries remain under their respective licenses.

@@ -8,6 +8,8 @@
     <string name="about_view_source_subtitle">Browse the code, releases, and documentation</string>
     <string name="about_report_issue">Report an issue</string>
     <string name="about_report_issue_subtitle">Report bugs or suggest improvements</string>
+    <string name="about_license">Apache License 2.0</string>
+    <string name="about_license_subtitle">Read the license for this app</string>
     <string name="about_privacy">Your medication data stays on this device. No account and no cloud sync.</string>
     <string name="about_disclaimer">MedsMan is a personal tracking tool, not medical advice. Always follow your clinician\'s instructions.</string>
 </resources>

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +50,7 @@ import com.sora.medsman.ui.theme.MedsManTheme
 // TODO: Make the GitHub repository public before publishing this release.
 private const val GITHUB_REPOSITORY = "https://github.com/Sora-Amagiri/MedsMan"
 private const val GITHUB_ISSUES = "$GITHUB_REPOSITORY/issues"
+private const val GITHUB_LICENSE = "$GITHUB_REPOSITORY/blob/main/LICENSE"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,6 +87,9 @@ fun AboutSheet(
             },
             onOpenIssues = {
                 runCatching { uriHandler.openUri(GITHUB_ISSUES) }
+            },
+            onOpenLicense = {
+                runCatching { uriHandler.openUri(GITHUB_LICENSE) }
             }
         )
     }
@@ -96,6 +101,7 @@ private fun AboutContent(
     onDismiss: () -> Unit,
     onOpenRepository: () -> Unit,
     onOpenIssues: () -> Unit,
+    onOpenLicense: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -162,6 +168,15 @@ private fun AboutContent(
             title = stringResource(R.string.about_report_issue),
             subtitle = stringResource(R.string.about_report_issue_subtitle),
             onClick = onOpenIssues
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        AboutLinkRow(
+            icon = Icons.Filled.Description,
+            title = stringResource(R.string.about_license),
+            subtitle = stringResource(R.string.about_license_subtitle),
+            onClick = onOpenLicense
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -277,7 +292,8 @@ private fun AboutContentPreview() {
                 versionName = "1.0.2",
                 onDismiss = {},
                 onOpenRepository = {},
-                onOpenIssues = {}
+                onOpenIssues = {},
+                onOpenLicense = {}
             )
         }
     }
