@@ -18,9 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.sora.medsman.R
 import com.sora.medsman.data.model.TakeStatus
 import com.sora.medsman.data.model.UserProfile
 import com.sora.medsman.ui.components.DosageScheduleCard
@@ -93,12 +95,12 @@ fun DashboardScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.SelfImprovement,
-                            contentDescription = "Tranquil Meds",
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
-                            text = "Tranquil Meds",
+                            text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
