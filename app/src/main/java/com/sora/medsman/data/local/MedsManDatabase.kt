@@ -18,7 +18,7 @@ import com.sora.medsman.data.local.entity.*
         HistoryLogEntity::class,
         UserProfileEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -73,6 +73,21 @@ abstract class MedsManDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v3 adds a units-per-dose value so a single scheduled dose can consume
+         * more than one pill or inventory unit. Existing rows default to 1.
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE medications ADD COLUMN unitsPerDose INTEGER NOT NULL DEFAULT 1"
+                )
+                db.execSQL(
+                    "ALTER TABLE history_logs ADD COLUMN unitsPerDose INTEGER NOT NULL DEFAULT 1"
+                )
+            }
+        }
+
         fun getDatabase(context: Context): MedsManDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -80,7 +95,7 @@ abstract class MedsManDatabase : RoomDatabase() {
                     MedsManDatabase::class.java,
                     "medsman_database"
                 )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .fallbackToDestructiveMigration(true)
                 .build()
                 INSTANCE = instance

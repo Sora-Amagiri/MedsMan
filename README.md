@@ -24,6 +24,8 @@ interface with hand-drawn tranquil nature scenes.
 - Configurable reorder threshold, refill-reminder toggle, pharmacy name/phone
 - Low-stock banner and notification when stock crosses the threshold
 - Add, edit, and delete medications, including reminder times and starting stock
+- **Units per dose** setting (for example, 2 tablets at once) with automatic stock
+  adjustment when a dose is marked taken
 
 ### History
 - Adherence overview with animated percentage ring
@@ -39,6 +41,7 @@ interface with hand-drawn tranquil nature scenes.
 - Navigation 3 state-driven back stack; system back returns to Today
 - All data stored locally in Room
 - Dosage reminders via `AlarmManager`, with Take / Skip / Snooze notification actions
+- Notifications and history show the full dose (for example, `2 × 10 mg`)
 - Empty by default — no sample or demo data is created
 
 ## Tech stack
@@ -129,8 +132,8 @@ preserving any user-created data.
 ./gradlew assembleDebug testDebugUnitTest lintDebug
 ```
 
-Unit tests cover the Room type converters and core models. Lint passes with zero
-errors.
+Unit tests cover the Room type converters, core models, dose formatting, and
+stock-correction math. Lint passes with zero errors.
 
 ## Known limitations
 

@@ -1,5 +1,6 @@
 package com.sora.medsman.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -16,6 +17,8 @@ data class HistoryLogEntity(
     val medicationId: Long,
     val medicationName: String,
     val dosage: String,
+    @ColumnInfo(defaultValue = "1")
+    val unitsPerDose: Int = 1,
     val scheduledTime: Long,
     val actionTime: Long,
     val status: TakeStatus,
@@ -26,6 +29,7 @@ data class HistoryLogEntity(
         medicationId = medicationId,
         medicationName = medicationName,
         dosage = dosage,
+        unitsPerDose = unitsPerDose,
         scheduledTime = scheduledTime,
         actionTime = actionTime,
         status = status,
@@ -38,6 +42,7 @@ data class HistoryLogEntity(
             medicationId = domain.medicationId,
             medicationName = domain.medicationName,
             dosage = domain.dosage,
+            unitsPerDose = domain.unitsPerDose,
             scheduledTime = domain.scheduledTime,
             actionTime = domain.actionTime,
             status = domain.status,

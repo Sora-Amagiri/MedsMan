@@ -4,6 +4,7 @@ data class Medication(
     val id: Long = 0,
     val name: String,
     val dosage: String,
+    val unitsPerDose: Int = 1,
     val form: String = "Pill",
     val instructions: String = "",
     val category: String = "Prescription",

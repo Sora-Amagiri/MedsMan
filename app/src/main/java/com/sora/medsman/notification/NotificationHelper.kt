@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.sora.medsman.MainActivity
 import com.sora.medsman.R
 import com.sora.medsman.data.model.Schedule
+import com.sora.medsman.util.formatDoseAmount
 import java.util.Calendar
 
 object NotificationHelper {
@@ -28,6 +29,7 @@ object NotificationHelper {
     const val EXTRA_SCHEDULE_ID = "extra_schedule_id"
     const val EXTRA_MEDICATION_NAME = "extra_medication_name"
     const val EXTRA_DOSAGE = "extra_dosage"
+    const val EXTRA_UNITS_PER_DOSE = "extra_units_per_dose"
     const val EXTRA_SCHEDULED_TIME = "extra_scheduled_time"
     const val EXTRA_ORIGINAL_SCHEDULED_TIME = "extra_original_scheduled_time"
 
@@ -67,6 +69,7 @@ object NotificationHelper {
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val triggerTime = calculateNextTriggerTime(schedule.timeOfDay, schedule.daysOfWeek)
+        val unitsPerDose = schedule.dosageQuantity.toIntOrNull()?.coerceAtLeast(1) ?: 1
 
         val intent = Intent(context, DosageAlarmReceiver::class.java).apply {
             action = ACTION_TRIGGER_DOSAGE
@@ -74,6 +77,7 @@ object NotificationHelper {
             putExtra(EXTRA_SCHEDULE_ID, schedule.id)
             putExtra(EXTRA_MEDICATION_NAME, medicationName)
             putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_UNITS_PER_DOSE, unitsPerDose)
             putExtra(EXTRA_SCHEDULED_TIME, triggerTime)
         }
 
@@ -121,6 +125,7 @@ object NotificationHelper {
         scheduleId: Long,
         medicationName: String,
         dosage: String,
+        unitsPerDose: Int = 1,
         minutes: Int = 15,
         originalScheduledTime: Long = System.currentTimeMillis()
     ) {
@@ -133,6 +138,7 @@ object NotificationHelper {
             putExtra(EXTRA_SCHEDULE_ID, scheduleId)
             putExtra(EXTRA_MEDICATION_NAME, medicationName)
             putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_UNITS_PER_DOSE, unitsPerDose.coerceAtLeast(1))
             putExtra(EXTRA_SCHEDULED_TIME, triggerTime)
             putExtra(EXTRA_ORIGINAL_SCHEDULED_TIME, originalScheduledTime)
         }
@@ -183,6 +189,7 @@ object NotificationHelper {
         scheduleId: Long,
         medicationName: String,
         dosage: String,
+        unitsPerDose: Int = 1,
         scheduledTime: Long
     ) {
         val notificationManager =
@@ -202,6 +209,7 @@ object NotificationHelper {
             putExtra(EXTRA_SCHEDULE_ID, scheduleId)
             putExtra(EXTRA_MEDICATION_NAME, medicationName)
             putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_UNITS_PER_DOSE, unitsPerDose)
             putExtra(EXTRA_SCHEDULED_TIME, scheduledTime)
             putExtra(EXTRA_ORIGINAL_SCHEDULED_TIME, scheduledTime)
         }
@@ -218,6 +226,7 @@ object NotificationHelper {
             putExtra(EXTRA_SCHEDULE_ID, scheduleId)
             putExtra(EXTRA_MEDICATION_NAME, medicationName)
             putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_UNITS_PER_DOSE, unitsPerDose)
             putExtra(EXTRA_SCHEDULED_TIME, scheduledTime)
             putExtra(EXTRA_ORIGINAL_SCHEDULED_TIME, scheduledTime)
         }
@@ -234,6 +243,7 @@ object NotificationHelper {
             putExtra(EXTRA_SCHEDULE_ID, scheduleId)
             putExtra(EXTRA_MEDICATION_NAME, medicationName)
             putExtra(EXTRA_DOSAGE, dosage)
+            putExtra(EXTRA_UNITS_PER_DOSE, unitsPerDose)
             putExtra(EXTRA_SCHEDULED_TIME, scheduledTime)
             putExtra(EXTRA_ORIGINAL_SCHEDULED_TIME, scheduledTime)
         }
@@ -246,8 +256,8 @@ object NotificationHelper {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_DOSAGE_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Time for $medicationName ($dosage)")
-            .setContentText("It's time to take your scheduled dose of $medicationName.")
+            .setContentTitle("Time for $medicationName")
+            .setContentText("Take ${formatDoseAmount(unitsPerDose, dosage)}.")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)

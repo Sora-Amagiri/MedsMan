@@ -18,6 +18,9 @@ class DosageAlarmReceiver : BroadcastReceiver() {
         val scheduleId = intent.getLongExtra(NotificationHelper.EXTRA_SCHEDULE_ID, -1L)
         val medicationName = intent.getStringExtra(NotificationHelper.EXTRA_MEDICATION_NAME) ?: "Medication"
         val dosage = intent.getStringExtra(NotificationHelper.EXTRA_DOSAGE) ?: ""
+        val unitsPerDose = intent
+            .getIntExtra(NotificationHelper.EXTRA_UNITS_PER_DOSE, 1)
+            .coerceAtLeast(1)
         val scheduledTime = intent.getLongExtra(NotificationHelper.EXTRA_SCHEDULED_TIME, System.currentTimeMillis())
         val originalScheduledTime = intent.getLongExtra(
             NotificationHelper.EXTRA_ORIGINAL_SCHEDULED_TIME,
@@ -39,6 +42,7 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                             scheduleId = scheduleId,
                             medicationName = medicationName,
                             dosage = dosage,
+                            unitsPerDose = unitsPerDose,
                             scheduledTime = originalScheduledTime
                         )
                     }
@@ -51,6 +55,7 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                             medicationId = medicationId,
                             medicationName = medicationName,
                             dosage = dosage,
+                            unitsPerDose = unitsPerDose,
                             scheduledTime = originalScheduledTime,
                             status = TakeStatus.TAKEN,
                             notes = "Taken via notification"
@@ -79,6 +84,7 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                             medicationId = medicationId,
                             medicationName = medicationName,
                             dosage = dosage,
+                            unitsPerDose = unitsPerDose,
                             scheduledTime = originalScheduledTime,
                             status = TakeStatus.SKIPPED,
                             notes = "Skipped via notification"
@@ -93,6 +99,7 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                             scheduleId = scheduleId,
                             medicationName = medicationName,
                             dosage = dosage,
+                            unitsPerDose = unitsPerDose,
                             minutes = 15,
                             originalScheduledTime = originalScheduledTime
                         )
@@ -100,6 +107,7 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                             medicationId = medicationId,
                             medicationName = medicationName,
                             dosage = dosage,
+                            unitsPerDose = unitsPerDose,
                             scheduledTime = originalScheduledTime,
                             status = TakeStatus.SNOOZED,
                             notes = "Snoozed 15 min"

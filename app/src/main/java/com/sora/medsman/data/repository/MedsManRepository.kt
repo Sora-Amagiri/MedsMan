@@ -37,6 +37,7 @@ interface MedsManRepository {
         medicationId: Long,
         medicationName: String,
         dosage: String,
+        unitsPerDose: Int = 1,
         scheduledTime: Long,
         status: TakeStatus,
         notes: String? = null

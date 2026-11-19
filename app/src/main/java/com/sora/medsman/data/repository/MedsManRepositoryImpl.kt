@@ -3,6 +3,7 @@ package com.sora.medsman.data.repository
 import com.sora.medsman.data.local.MedsManDatabase
 import com.sora.medsman.data.local.entity.*
 import com.sora.medsman.data.model.*
+import com.sora.medsman.util.stockDeltaForStatusChange
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -182,10 +183,13 @@ class MedsManRepositoryImpl(
         medicationId: Long,
         medicationName: String,
         dosage: String,
+        unitsPerDose: Int,
         scheduledTime: Long,
         status: TakeStatus,
         notes: String?
     ) {
+        val doseUnits = unitsPerDose.coerceAtLeast(1)
+
         stockMutex.withLock {
             val existing = historyLogDao.getLogForDose(medicationId, scheduledTime)
             val log = HistoryLogEntity(
@@ -193,6 +197,7 @@ class MedsManRepositoryImpl(
                 medicationId = medicationId,
                 medicationName = medicationName,
                 dosage = dosage,
+                unitsPerDose = doseUnits,
                 scheduledTime = scheduledTime,
                 actionTime = System.currentTimeMillis(),
                 status = status,
@@ -202,16 +207,19 @@ class MedsManRepositoryImpl(
             if (existing == null) {
                 historyLogDao.insertHistoryLog(log)
                 if (status == TakeStatus.TAKEN) {
-                    decrementStockLocked(medicationId, 1)
+                    decrementStockLocked(medicationId, doseUnits)
                 }
             } else {
                 historyLogDao.updateHistoryLog(log)
-                // Keep inventory in sync when the user corrects a previously logged dose.
-                val stockDelta = when {
-                    existing.status != TakeStatus.TAKEN && status == TakeStatus.TAKEN -> -1
-                    existing.status == TakeStatus.TAKEN && status != TakeStatus.TAKEN -> 1
-                    else -> 0
-                }
+                // Keep inventory in sync when the user corrects a previously logged
+                // dose, including when the per-dose amount has changed.
+                val stockDelta = stockDeltaForStatusChange(
+                    existingStatus = existing.status,
+                    existingUnitsPerDose = existing.unitsPerDose,
+                    newStatus = status,
+                    newUnitsPerDose = doseUnits
+                )
+
                 if (stockDelta != 0) {
                     val inventory = inventoryDao.getInventoryForMedicationSync(medicationId)
                     if (inventory != null) {

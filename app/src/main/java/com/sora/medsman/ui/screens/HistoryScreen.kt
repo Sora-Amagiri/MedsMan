@@ -42,6 +42,7 @@ import com.sora.medsman.ui.theme.*
 import com.sora.medsman.ui.viewmodel.AdherenceStats
 import com.sora.medsman.ui.viewmodel.HistoryUiState
 import com.sora.medsman.ui.viewmodel.HistoryViewModel
+import com.sora.medsman.util.formatDoseAmount
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -640,7 +641,8 @@ private fun HistoryLogCard(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "${log.dosage} · Scheduled ${formatTime(log.scheduledTime)}",
+                    text = "${formatDoseAmount(log.unitsPerDose, log.dosage)} · " +
+                        "Scheduled ${formatTime(log.scheduledTime)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -849,6 +851,7 @@ private fun HistoryComponentsPreview() {
                     medicationId = 1,
                     medicationName = "Lisinopril",
                     dosage = "10 mg",
+                    unitsPerDose = 2,
                     scheduledTime = now,
                     actionTime = now,
                     status = TakeStatus.TAKEN

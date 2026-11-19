@@ -233,6 +233,7 @@ fun DashboardScreen(
                                 medicationId = scheduleItem.schedule.medicationId,
                                 medicationName = scheduleItem.medicationName,
                                 dosage = scheduleItem.dosage,
+                                unitsPerDose = scheduleItem.unitsPerDose,
                                 scheduledTime = scheduledTimeMillis,
                                 status = newStatus,
                                 context = context

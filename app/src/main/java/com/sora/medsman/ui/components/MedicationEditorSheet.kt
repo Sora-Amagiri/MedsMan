@@ -12,9 +12,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import com.sora.medsman.data.model.Inventory
@@ -60,6 +63,9 @@ fun MedicationEditorSheet(
 
     var name by rememberSaveable { mutableStateOf(existingMedication?.name.orEmpty()) }
     var dosage by rememberSaveable { mutableStateOf(existingMedication?.dosage.orEmpty()) }
+    var unitsPerDose by rememberSaveable {
+        mutableStateOf((existingMedication?.unitsPerDose ?: 1).coerceAtLeast(1))
+    }
     var form by rememberSaveable { mutableStateOf(existingMedication?.form ?: "Tablet") }
     var instructions by rememberSaveable { mutableStateOf(existingMedication?.instructions.orEmpty()) }
     var colorHex by rememberSaveable { mutableStateOf(existingMedication?.colorHex ?: "#2D6A4F") }
@@ -112,6 +118,7 @@ fun MedicationEditorSheet(
         return base.copy(
             name = name.trim(),
             dosage = dosage.trim(),
+            unitsPerDose = unitsPerDose,
             form = form,
             instructions = instructions.trim(),
             colorHex = colorHex,
@@ -183,10 +190,16 @@ fun MedicationEditorSheet(
             OutlinedTextField(
                 value = dosage,
                 onValueChange = { if (it.length <= 40) dosage = it },
-                label = { Text("Dosage") },
+                label = { Text("Dosage per unit") },
                 placeholder = { Text("e.g. 10 mg") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
+            )
+
+            UnitsPerDoseRow(
+                unitsPerDose = unitsPerDose,
+                unitLabel = unit.trim().ifBlank { "units" },
+                onUnitsChange = { unitsPerDose = it }
             )
 
             Text(
@@ -460,6 +473,71 @@ fun MedicationEditorSheet(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun UnitsPerDoseRow(
+    unitsPerDose: Int,
+    unitLabel: String,
+    onUnitsChange: (Int) -> Unit
+) {
+    val singularUnit = unitLabel.removeSuffix("s").ifBlank { "unit" }
+    val unitText = if (unitsPerDose == 1) singularUnit else unitLabel
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Units per dose",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = "Each dose uses $unitsPerDose $unitText. Stock drops by the same amount.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = { onUnitsChange((unitsPerDose - 1).coerceAtLeast(1)) },
+                    enabled = unitsPerDose > 1,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Remove,
+                        contentDescription = "Decrease units per dose",
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Text(
+                    text = unitsPerDose.toString(),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.widthIn(min = 28.dp)
+                )
+                IconButton(
+                    onClick = { onUnitsChange((unitsPerDose + 1).coerceAtMost(99)) },
+                    enabled = unitsPerDose < 99,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Increase units per dose",
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
     }
 }
 

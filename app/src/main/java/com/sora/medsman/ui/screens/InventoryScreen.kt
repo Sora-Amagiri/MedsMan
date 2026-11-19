@@ -486,7 +486,14 @@ private fun InventoryCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "${item.medication.dosage} · ${item.medication.form}",
+                        text = buildString {
+                            append(item.medication.dosage)
+                            append(" · ")
+                            append(item.medication.form)
+                            if (item.medication.unitsPerDose > 1) {
+                                append(" · ${item.medication.unitsPerDose} per dose")
+                            }
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -926,6 +933,7 @@ private fun InventoryComponentsPreview() {
                         id = 1,
                         name = "Lisinopril",
                         dosage = "10 mg",
+                        unitsPerDose = 2,
                         colorHex = "#2D6A4F"
                     ),
                     inventory = Inventory(

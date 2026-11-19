@@ -122,7 +122,11 @@ class InventoryViewModel(
                     medication = medication,
                     inventory = inventory,
                     schedules = scheduleTimes.distinct().sorted().map { time ->
-                        Schedule(medicationId = 0, timeOfDay = time)
+                        Schedule(
+                            medicationId = 0,
+                            timeOfDay = time,
+                            dosageQuantity = medication.unitsPerDose.toString()
+                        )
                     }
                 )
                 repository.getSchedulesForMedication(medicationId).first().forEach { schedule ->
@@ -175,8 +179,15 @@ class InventoryViewModel(
                 val schedulesByTime = existingSchedules.associateBy { it.timeOfDay }
                 desiredTimes.forEach { time ->
                     val current = schedulesByTime[time]
-                    val schedule = current?.copy(isEnabled = true, reminderEnabled = true)
-                        ?: Schedule(medicationId = medicationId, timeOfDay = time)
+                    val schedule = current?.copy(
+                        isEnabled = true,
+                        reminderEnabled = true,
+                        dosageQuantity = updatedMedication.unitsPerDose.toString()
+                    ) ?: Schedule(
+                        medicationId = medicationId,
+                        timeOfDay = time,
+                        dosageQuantity = updatedMedication.unitsPerDose.toString()
+                    )
                     val scheduleId = if (current != null) {
                         repository.updateSchedule(schedule)
                         schedule.id

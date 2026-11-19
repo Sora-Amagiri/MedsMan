@@ -32,6 +32,7 @@ import com.sora.medsman.data.model.Schedule
 import com.sora.medsman.data.model.TakeStatus
 import com.sora.medsman.ui.theme.*
 import com.sora.medsman.ui.viewmodel.DailyScheduleItem
+import com.sora.medsman.util.formatDoseAmount
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -137,7 +138,7 @@ fun DosageScheduleCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = item.dosage,
+                            text = formatDoseAmount(item.unitsPerDose, item.dosage),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.primary
@@ -413,6 +414,7 @@ fun DosageScheduleCardPreview() {
                     schedule = Schedule(id = 2, medicationId = 2, timeOfDay = "12:30"),
                     medicationName = "Vitamin D3",
                     dosage = "2000 IU",
+                    unitsPerDose = 2,
                     colorHex = "#FF9800",
                     todayStatus = TakeStatus.TAKEN
                 ),

@@ -5,6 +5,7 @@ data class HistoryLog(
     val medicationId: Long,
     val medicationName: String,
     val dosage: String,
+    val unitsPerDose: Int = 1,
     val scheduledTime: Long,
     val actionTime: Long = System.currentTimeMillis(),
     val status: TakeStatus,

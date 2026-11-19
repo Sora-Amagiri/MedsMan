@@ -75,8 +75,11 @@ class MedicationViewModel(
         context: Context
     ) {
         viewModelScope.launch {
-            val medId = repository.insertMedication(medication, inventory, schedules)
-            schedules.forEach { schedule ->
+            val preparedSchedules = schedules.map {
+                it.copy(dosageQuantity = medication.unitsPerDose.toString())
+            }
+            val medId = repository.insertMedication(medication, inventory, preparedSchedules)
+            preparedSchedules.forEach { schedule ->
                 NotificationHelper.scheduleDosageAlarm(
                     context = context,
                     schedule = schedule.copy(medicationId = medId),

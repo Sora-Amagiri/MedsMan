@@ -18,6 +18,7 @@ data class DailyScheduleItem(
     val schedule: Schedule,
     val medicationName: String,
     val dosage: String,
+    val unitsPerDose: Int = 1,
     val colorHex: String,
     val todayStatus: TakeStatus? = null,
     val isDueToday: Boolean = true
@@ -67,6 +68,7 @@ class ScheduleViewModel(
                 schedule = schedule,
                 medicationName = med.name,
                 dosage = med.dosage,
+                unitsPerDose = med.unitsPerDose,
                 colorHex = med.colorHex,
                 todayStatus = loggedStatus,
                 isDueToday = isDue
@@ -89,6 +91,7 @@ class ScheduleViewModel(
         medicationId: Long,
         medicationName: String,
         dosage: String,
+        unitsPerDose: Int = 1,
         scheduledTime: Long,
         status: TakeStatus,
         notes: String? = null,
@@ -105,6 +108,7 @@ class ScheduleViewModel(
                 medicationId = medicationId,
                 medicationName = medicationName,
                 dosage = dosage,
+                unitsPerDose = unitsPerDose,
                 scheduledTime = scheduledTime,
                 status = status,
                 notes = notes
@@ -130,12 +134,15 @@ class ScheduleViewModel(
 
     fun addSchedule(schedule: Schedule, context: Context) {
         viewModelScope.launch {
-            val scheduleId = repository.insertSchedule(schedule)
             val med = repository.getMedicationById(schedule.medicationId).firstOrNull()
+            val prepared = schedule.copy(
+                dosageQuantity = (med?.unitsPerDose ?: 1).toString()
+            )
+            val scheduleId = repository.insertSchedule(prepared)
             if (med != null) {
                 NotificationHelper.scheduleDosageAlarm(
                     context = context,
-                    schedule = schedule.copy(id = scheduleId),
+                    schedule = prepared.copy(id = scheduleId),
                     medicationName = med.name,
                     dosage = med.dosage
                 )
