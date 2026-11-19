@@ -1,5 +1,8 @@
 package com.sora.medsman.ui.screens
 
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,6 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.WbSunny
@@ -18,14 +23,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.sora.medsman.R
 import com.sora.medsman.data.model.TakeStatus
 import com.sora.medsman.data.model.UserProfile
+import com.sora.medsman.notification.NotificationHelper
 import com.sora.medsman.ui.components.AboutSheet
 import com.sora.medsman.ui.components.DosageScheduleCard
 import com.sora.medsman.ui.components.NatureHeaderCard
@@ -67,6 +77,19 @@ fun DashboardScreen(
     val scheduleState by scheduleViewModel.uiState.collectAsState()
     val profileState by profileViewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    var notificationsEnabled by remember {
+        mutableStateOf(NotificationHelper.areDosageNotificationsEnabled(context))
+    }
+    var exactAlarmsAllowed by remember {
+        mutableStateOf(NotificationHelper.canScheduleExactAlarms(context))
+    }
+
+    // Permission changes happen in system settings, so re-check on return.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        notificationsEnabled = NotificationHelper.areDosageNotificationsEnabled(context)
+        exactAlarmsAllowed = NotificationHelper.canScheduleExactAlarms(context)
+    }
 
     var selectedFilter by rememberSaveable { mutableStateOf(ScheduleFilter.ALL) }
     var showProfileSheet by rememberSaveable { mutableStateOf(false) }
@@ -158,6 +181,31 @@ fun DashboardScreen(
                     onProfileClick = { showProfileSheet = true },
                     onLowStockClick = onNavigateToInventory
                 )
+            }
+
+            // Permission warnings
+            if (!notificationsEnabled) {
+                item {
+                    ReminderWarningCard(
+                        icon = Icons.Filled.NotificationsOff,
+                        title = "Reminders are turned off",
+                        message = "Notifications are blocked, so dose reminders cannot appear. Allow notifications in system settings.",
+                        actionLabel = "Notification settings",
+                        onAction = { openNotificationSettings(context) }
+                    )
+                }
+            }
+
+            if (!exactAlarmsAllowed) {
+                item {
+                    ReminderWarningCard(
+                        icon = Icons.Filled.Alarm,
+                        title = "Exact reminders are off",
+                        message = "Android may delay reminders. Allow exact alarms to keep dose times accurate.",
+                        actionLabel = "Allow exact alarms",
+                        onAction = { openExactAlarmSettings(context) }
+                    )
+                }
             }
 
             // Schedule Filter Chips Section Header
@@ -260,6 +308,88 @@ fun DashboardScreen(
             AboutSheet(onDismiss = { showAboutSheet = false })
         }
     }
+}
+
+@Composable
+private fun ReminderWarningCard(
+    icon: ImageVector,
+    title: String,
+    message: String,
+    actionLabel: String,
+    onAction: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+                TextButton(
+                    onClick = onAction,
+                    contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)
+                ) {
+                    Text(actionLabel)
+                }
+            }
+        }
+    }
+}
+
+private fun openNotificationSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+    }
+    try {
+        context.startActivity(intent)
+    } catch (_: Exception) {
+        openAppSettings(context)
+    }
+}
+
+private fun openExactAlarmSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+        data = "package:${context.packageName}".toUri()
+    }
+    try {
+        context.startActivity(intent)
+    } catch (_: Exception) {
+        openAppSettings(context)
+    }
+}
+
+private fun openAppSettings(context: Context) {
+    context.startActivity(
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = "package:${context.packageName}".toUri()
+        }
+    )
 }
 
 @Composable

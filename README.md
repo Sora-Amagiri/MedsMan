@@ -41,6 +41,9 @@ interface with hand-drawn tranquil nature scenes.
 - Navigation 3 state-driven back stack; system back returns to Today
 - All data stored locally in Room
 - Dosage reminders via `AlarmManager`, with Take / Skip / Snooze notification actions
+- Reminders are restored after reboot, app update, and clock or time-zone changes
+- Exact alarms are used when allowed; the app warns when notifications or exact alarms
+  are disabled
 - Notifications and history show the full dose (for example, `2 × 10 mg`)
 - Empty by default — no sample or demo data is created
 
@@ -96,7 +99,8 @@ medication with its dosage, reminder times, stock, and refill threshold.
 - **POST_NOTIFICATIONS** — dosage and refill reminders
 - **SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM** — on-time dose reminders; the app falls
   back to inexact alarms when exact alarms are not allowed
-- **RECEIVE_BOOT_COMPLETED** — re-schedules reminders after a reboot
+- **RECEIVE_BOOT_COMPLETED** — re-schedules reminders after reboot, app updates, and
+  clock or time-zone changes
 - **VIBRATE / WAKE_LOCK / INTERNET** — declared by the template; reminders use
   vibration and wake locks
 
@@ -139,7 +143,11 @@ stock-correction math. Lint passes with zero errors.
 
 - Requires Android 16 (API 36) or newer.
 - Notifications require the runtime notification permission; without it, reminders
-  are scheduled but silent.
+  are scheduled but silent. The Today screen warns when notifications are blocked.
+- Force-stopping the app cancels its alarms. Reminders return after the app is opened
+  again or the device is restarted.
+- Some aggressive battery managers may delay inexact alarms when exact-alarm access
+  is denied.
 - Cloud backup, export, and multi-device sync are not implemented.
 
 ## License

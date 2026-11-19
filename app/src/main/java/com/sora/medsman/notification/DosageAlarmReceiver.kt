@@ -114,20 +114,56 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                         )
                     }
                 }
-
-                // A one-shot alarm must be re-armed for the next scheduled occurrence.
-                val schedule = db.scheduleDao().getScheduleById(scheduleId)
-                if (schedule != null && schedule.isEnabled && schedule.reminderEnabled) {
-                    NotificationHelper.scheduleDosageAlarm(
-                        context = context,
-                        schedule = schedule.toDomain(),
-                        medicationName = medicationName,
-                        dosage = dosage
-                    )
-                }
+            } catch (e: Exception) {
+                // A failed notification or log must never prevent the next dose
+                // from being scheduled.
+                e.printStackTrace()
             } finally {
-                pendingResult.finish()
+                try {
+                    rearmNextDose(
+                        context = context,
+                        scheduleId = scheduleId,
+                        fallbackName = medicationName,
+                        fallbackDosage = dosage
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    pendingResult.finish()
+                }
             }
         }
+    }
+
+    /**
+     * One-shot alarms must be re-armed for the next occurrence. Current
+     * medication values are used so renamed medications or changed doses show
+     * correctly in the next notification.
+     */
+    private suspend fun rearmNextDose(
+        context: Context,
+        scheduleId: Long,
+        fallbackName: String,
+        fallbackDosage: String
+    ) {
+        if (scheduleId <= 0L) return
+
+        val db = MedsManDatabase.getDatabase(context)
+        val schedule = db.scheduleDao().getScheduleById(scheduleId) ?: return
+        if (!schedule.isEnabled || !schedule.reminderEnabled) return
+
+        val medication = db.medicationDao().getMedicationByIdSync(schedule.medicationId)
+        NotificationHelper.scheduleDosageAlarm(
+            context = context,
+            schedule = schedule.toDomain().let { domain ->
+                if (medication != null) {
+                    domain.copy(dosageQuantity = medication.unitsPerDose.toString())
+                } else {
+                    domain
+                }
+            },
+            medicationName = medication?.name ?: fallbackName,
+            dosage = medication?.dosage ?: fallbackDosage
+        )
     }
 }

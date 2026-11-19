@@ -7,12 +7,14 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.sora.medsman.MainActivity
 import com.sora.medsman.R
+import com.sora.medsman.data.local.MedsManDatabase
 import com.sora.medsman.data.model.Schedule
 import com.sora.medsman.util.formatDoseAmount
+import kotlinx.coroutines.flow.first
 import java.util.Calendar
 
 object NotificationHelper {
@@ -88,36 +90,47 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (alarmManager.canScheduleExactAlarms()) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        triggerTime,
-                        pendingIntent
-                    )
-                } else {
-                    alarmManager.setAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        triggerTime,
-                        pendingIntent
-                    )
-                }
-            } else {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
-            }
-        } catch (_: Exception) {
-            alarmManager.setAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
+        setAlarm(context, triggerTime, pendingIntent)
+    }
+
+    /**
+     * Re-arms every enabled schedule. Called on app start, after a reboot or app
+     * update, and after system time, timezone, or exact-alarm permission changes.
+     */
+    suspend fun rescheduleAllReminders(context: Context) {
+        val database = MedsManDatabase.getDatabase(context)
+        val schedules = database.scheduleDao().getAllSchedules().first()
+        val medications = database.medicationDao().getAllMedications().first()
+
+        schedules.forEach { schedule ->
+            if (!schedule.isEnabled || !schedule.reminderEnabled) return@forEach
+            val medication = medications.find { it.id == schedule.medicationId }
+                ?: return@forEach
+            scheduleDosageAlarm(
+                context = context,
+                schedule = schedule.toDomain().copy(
+                    dosageQuantity = medication.unitsPerDose.toString()
+                ),
+                medicationName = medication.name,
+                dosage = medication.dosage
             )
         }
     }
+
+    fun areDosageNotificationsEnabled(context: Context): Boolean {
+        val notificationManager = NotificationManagerCompat.from(context)
+        if (!notificationManager.areNotificationsEnabled()) return false
+        val channel = notificationManager.getNotificationChannel(CHANNEL_DOSAGE_ID)
+        return channel == null || channel.importance != NotificationManager.IMPORTANCE_NONE
+    }
+
+    fun canScheduleExactAlarms(context: Context): Boolean =
+        try {
+            (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+                .canScheduleExactAlarms()
+        } catch (_: Exception) {
+            false
+        }
 
     fun snoozeDosageAlarm(
         context: Context,
@@ -151,11 +164,7 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            triggerTime,
-            pendingIntent
-        )
+        setAlarm(context, triggerTime, pendingIntent)
     }
 
     fun cancelDosageAlarm(context: Context, scheduleId: Long) {
@@ -180,6 +189,8 @@ object NotificationHelper {
                 pendingIntent.cancel()
             }
         }
+        // Also remove any reminder notification that is still on screen.
+        cancelNotification(context, scheduleId.toInt())
     }
 
     @SuppressLint("MissingPermission")
@@ -304,6 +315,38 @@ object NotificationHelper {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(notificationId)
+    }
+
+    private fun setAlarm(
+        context: Context,
+        triggerTime: Long,
+        pendingIntent: PendingIntent
+    ) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val canUseExactAlarm = try {
+            alarmManager.canScheduleExactAlarms()
+        } catch (_: Exception) {
+            false
+        }
+
+        if (canUseExactAlarm) {
+            try {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
+                )
+                return
+            } catch (_: Exception) {
+                // Permission may be revoked between the check and this call.
+            }
+        }
+
+        alarmManager.setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
     }
 
     private fun calculateNextTriggerTime(timeOfDay: String, daysOfWeek: List<Int>): Long {

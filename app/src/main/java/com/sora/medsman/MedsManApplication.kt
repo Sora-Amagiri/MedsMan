@@ -9,7 +9,6 @@ import com.sora.medsman.notification.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MedsManApplication : Application() {
@@ -50,25 +49,16 @@ class MedsManApplication : Application() {
     }
 
     /**
-     * Alarms are one-shot and are lost when the process dies or the device restarts
-     * without a BOOT_COMPLETED receiver running. Re-arm every enabled schedule on
-     * each app start so reminders keep firing after updates or force stops.
+     * Alarms are one-shot and can be lost when the process dies, the app is
+     * updated, or the device is force-stopped. Re-arm every enabled schedule on
+     * each app start so reminders keep firing.
      */
     private fun scheduleExistingReminders() {
         applicationScope.launch {
-            val schedules = repository.schedules.first { it.isNotEmpty() }
-            val medications = repository.medications.first { it.isNotEmpty() }
-
-            schedules.forEach { schedule ->
-                if (!schedule.isEnabled || !schedule.reminderEnabled) return@forEach
-                val medication = medications.find { it.id == schedule.medicationId }
-                    ?: return@forEach
-                NotificationHelper.scheduleDosageAlarm(
-                    context = this@MedsManApplication,
-                    schedule = schedule,
-                    medicationName = medication.name,
-                    dosage = medication.dosage
-                )
+            try {
+                NotificationHelper.rescheduleAllReminders(this@MedsManApplication)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
