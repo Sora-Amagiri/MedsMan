@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -34,11 +35,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
+import com.sora.medsman.R
 import com.sora.medsman.data.model.Inventory
 import com.sora.medsman.data.model.Medication
 import com.sora.medsman.ui.components.MedicationEditorSheet
 import com.sora.medsman.ui.components.NatureBackdrop
 import com.sora.medsman.ui.components.NatureScene
+import com.sora.medsman.ui.components.localizedFormLabel
+import com.sora.medsman.ui.components.localizedUnit
 import com.sora.medsman.ui.theme.MedsManTheme
 import com.sora.medsman.ui.theme.TakenGreen
 import com.sora.medsman.ui.theme.TakenGreenContainer
@@ -80,7 +84,7 @@ fun InventoryScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Pill Inventory",
+                        text = stringResource(R.string.inventory_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         )
@@ -95,7 +99,7 @@ fun InventoryScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Add,
-                            contentDescription = "Add medication"
+                            contentDescription = stringResource(R.string.inventory_add_medication)
                         )
                     }
                 },
@@ -152,13 +156,13 @@ fun InventoryScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Your medications",
+                            text = stringResource(R.string.inventory_your_medications),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Text(
-                            text = "${items.size} tracked",
+                            text = stringResource(R.string.inventory_tracked, items.size),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -301,7 +305,7 @@ private fun InventoryHeroCard(
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = "Your medicine cabinet",
+                        text = stringResource(R.string.inventory_cabinet_title),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -312,7 +316,11 @@ private fun InventoryHeroCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "$totalUnits unit(s) on hand across $totalMedications medication(s)",
+                    text = stringResource(
+                        R.string.inventory_summary,
+                        totalUnits,
+                        totalMedications
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.85f)
                 )
@@ -321,14 +329,14 @@ private fun InventoryHeroCard(
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     HeroStatPill(
-                        text = "$totalMedications tracked",
+                        text = stringResource(R.string.inventory_tracked, totalMedications),
                         icon = Icons.Filled.Medication
                     )
                     HeroStatPill(
                         text = if (lowStockCount > 0) {
-                            "$lowStockCount low on stock"
+                            stringResource(R.string.inventory_low_stock_count, lowStockCount)
                         } else {
-                            "All stocked up"
+                            stringResource(R.string.inventory_all_stocked)
                         },
                         icon = if (lowStockCount > 0) {
                             Icons.Rounded.WarningAmber
@@ -387,7 +395,7 @@ private fun LowStockBanner(count: Int) {
         ) {
             Icon(
                 imageVector = Icons.Rounded.WarningAmber,
-                contentDescription = "Refill alert",
+                contentDescription = stringResource(R.string.inventory_refill_alert),
                 tint = MaterialTheme.colorScheme.onErrorContainer,
                 modifier = Modifier.size(26.dp)
             )
@@ -396,14 +404,14 @@ private fun LowStockBanner(count: Int) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Time to refill",
+                    text = stringResource(R.string.inventory_low_stock_banner_title),
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )
                 )
                 Text(
-                    text = "$count medication(s) at or below the reorder threshold.",
+                    text = stringResource(R.string.inventory_low_stock_banner_message, count),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f)
                 )
@@ -433,6 +441,22 @@ private fun InventoryCard(
     val threshold = item.inventory.refillThreshold
     val capacity = max(threshold * 3, max(stock, 1))
     val stockFraction = (stock.toFloat() / capacity.toFloat()).coerceIn(0f, 1f)
+    val unitLabel = localizedUnit(item.inventory.unit)
+    val formLabel = localizedFormLabel(item.medication.form)
+    val perDose = if (item.medication.unitsPerDose > 1) {
+        stringResource(
+            R.string.inventory_per_dose,
+            item.medication.unitsPerDose,
+            unitLabel
+        )
+    } else {
+        null
+    }
+    val medicationSubtitle = listOfNotNull(
+        item.medication.dosage.takeIf { it.isNotBlank() },
+        formLabel.takeIf { it.isNotBlank() },
+        perDose
+    ).joinToString(" · ")
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -486,14 +510,7 @@ private fun InventoryCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = buildString {
-                            append(item.medication.dosage)
-                            append(" · ")
-                            append(item.medication.form)
-                            if (item.medication.unitsPerDose > 1) {
-                                append(" · ${item.medication.unitsPerDose} per dose")
-                            }
-                        },
+                        text = medicationSubtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -506,7 +523,10 @@ private fun InventoryCard(
                 IconButton(onClick = onEdit) {
                     Icon(
                         imageVector = Icons.Filled.Edit,
-                        contentDescription = "Edit ${item.medication.name}",
+                        contentDescription = stringResource(
+                            R.string.inventory_edit_medication,
+                            item.medication.name
+                        ),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
@@ -534,14 +554,18 @@ private fun InventoryCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = item.inventory.unit,
+                            text = unitLabel,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 5.dp)
                         )
                     }
                     Text(
-                        text = "Refill alert at $threshold ${item.inventory.unit}",
+                        text = stringResource(
+                            R.string.inventory_refill_alert_at,
+                            threshold,
+                            unitLabel
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -595,7 +619,7 @@ private fun InventoryCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Settings")
+                    Text(stringResource(R.string.inventory_settings))
                 }
 
                 FilledTonalButton(
@@ -609,7 +633,7 @@ private fun InventoryCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Refill")
+                    Text(stringResource(R.string.inventory_refill))
                 }
             }
         }
@@ -646,7 +670,11 @@ private fun StockBadge(isLowStock: Boolean) {
                 modifier = Modifier.size(14.dp)
             )
             Text(
-                text = if (isLowStock) "Low stock" else "Stocked",
+                text = if (isLowStock) {
+                    stringResource(R.string.inventory_low_stock)
+                } else {
+                    stringResource(R.string.inventory_stocked)
+                },
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -675,7 +703,10 @@ private fun StockStepper(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Remove,
-                    contentDescription = "Decrease stock for $medicationName",
+                    contentDescription = stringResource(
+                        R.string.inventory_decrease_stock,
+                        medicationName
+                    ),
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -685,7 +716,10 @@ private fun StockStepper(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Increase stock for $medicationName",
+                    contentDescription = stringResource(
+                        R.string.inventory_increase_stock,
+                        medicationName
+                    ),
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -716,12 +750,12 @@ private fun EmptyInventoryState(onAdd: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "No medications tracked yet",
+                text = stringResource(R.string.inventory_empty_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Add a medication to start monitoring your supply.",
+                text = stringResource(R.string.inventory_empty_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -737,7 +771,7 @@ private fun EmptyInventoryState(onAdd: () -> Unit) {
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Add medication")
+                Text(stringResource(R.string.inventory_add_medication))
             }
         }
     }
@@ -752,15 +786,22 @@ private fun RefillStockDialog(
     var amountText by rememberSaveable { mutableStateOf("30") }
     val amount = amountText.toIntOrNull() ?: 0
     val newTotal = item.inventory.currentStock + amount
+    val unitLabel = localizedUnit(item.inventory.unit)
 
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-        title = { Text("Refill ${item.medication.name}") },
+        title = {
+            Text(stringResource(R.string.inventory_refill_title, item.medication.name))
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "Current stock: ${item.inventory.currentStock} ${item.inventory.unit}",
+                    text = stringResource(
+                        R.string.inventory_current_stock,
+                        item.inventory.currentStock,
+                        unitLabel
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -772,7 +813,7 @@ private fun RefillStockDialog(
                             amountText = value
                         }
                     },
-                    label = { Text("Amount to add") },
+                    label = { Text(stringResource(R.string.inventory_amount_to_add)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
@@ -788,7 +829,11 @@ private fun RefillStockDialog(
                 }
 
                 Text(
-                    text = "New total: $newTotal ${item.inventory.unit}",
+                    text = stringResource(
+                        R.string.inventory_new_total,
+                        newTotal,
+                        unitLabel
+                    ),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -799,12 +844,12 @@ private fun RefillStockDialog(
                 onClick = { onConfirm(amount) },
                 enabled = amount > 0
             ) {
-                Text("Add stock")
+                Text(stringResource(R.string.inventory_add_stock))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )
@@ -818,6 +863,7 @@ private fun InventorySettingsDialog(
 ) {
     val inventory = item.inventory
     val maxThreshold = max(30, inventory.refillThreshold).toFloat()
+    val unitLabel = localizedUnit(inventory.unit)
 
     var threshold by remember {
         mutableFloatStateOf(inventory.refillThreshold.coerceIn(1, maxThreshold.toInt()).toFloat())
@@ -829,7 +875,7 @@ private fun InventorySettingsDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Filled.Tune, contentDescription = null) },
-        title = { Text("Stock settings") },
+        title = { Text(stringResource(R.string.inventory_stock_settings)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -841,7 +887,11 @@ private fun InventorySettingsDialog(
                 )
 
                 Text(
-                    text = "Alert me when ${threshold.roundToInt()} ${inventory.unit} remain",
+                    text = stringResource(
+                        R.string.inventory_alert_when,
+                        threshold.roundToInt(),
+                        unitLabel
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -859,11 +909,11 @@ private fun InventorySettingsDialog(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Refill reminder",
+                            text = stringResource(R.string.inventory_refill_reminder),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = "Notify me when stock is low",
+                            text = stringResource(R.string.inventory_refill_reminder_description),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -877,7 +927,7 @@ private fun InventorySettingsDialog(
                 OutlinedTextField(
                     value = pharmacyName,
                     onValueChange = { pharmacyName = it },
-                    label = { Text("Pharmacy (optional)") },
+                    label = { Text(stringResource(R.string.inventory_pharmacy)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -885,7 +935,7 @@ private fun InventorySettingsDialog(
                 OutlinedTextField(
                     value = pharmacyPhone,
                     onValueChange = { pharmacyPhone = it },
-                    label = { Text("Pharmacy phone (optional)") },
+                    label = { Text(stringResource(R.string.inventory_pharmacy_phone)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth()
@@ -905,12 +955,12 @@ private fun InventorySettingsDialog(
                     )
                 }
             ) {
-                Text("Save")
+                Text(stringResource(R.string.common_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

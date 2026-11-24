@@ -36,6 +36,7 @@ interface with hand-drawn tranquil nature scenes.
 ### App-wide
 - Adaptive navigation: bottom bar on phones, navigation rail on medium windows,
   permanent drawer on expanded windows
+- English and Japanese interface, with per-app language selection on Android 13+
 - Custom adaptive leaf-capsule launcher icon with monochrome themed-icon support
 - About sheet with version, GitHub source, issue reporting, and license links
 - Navigation 3 state-driven back stack; system back returns to Today
@@ -103,6 +104,12 @@ medication with its dosage, reminder times, stock, and refill threshold.
   clock or time-zone changes
 - **VIBRATE / WAKE_LOCK / INTERNET** — declared by the template; reminders use
   vibration and wake locks
+
+## Languages
+
+English is the default language and Japanese is included as a full translation.
+On Android 13 and newer, open **Settings → Apps → MedsMan → Language** to choose
+the app language independently of the system language.
 
 ## Project structure
 

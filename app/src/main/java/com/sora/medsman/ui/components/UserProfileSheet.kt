@@ -24,10 +24,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.sora.medsman.R
 import com.sora.medsman.data.model.UserProfile
 import com.sora.medsman.ui.theme.MedsManTheme
 
@@ -85,7 +87,7 @@ fun UserProfileSheet(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Person,
-                            contentDescription = "User Avatar",
+                            contentDescription = stringResource(R.string.profile_avatar),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.size(24.dp)
                         )
@@ -93,14 +95,14 @@ fun UserProfileSheet(
 
                     Column {
                         Text(
-                            text = "User Profile",
+                            text = stringResource(R.string.profile_title),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         )
                         Text(
-                            text = "Manage personal details & emergency info",
+                            text = stringResource(R.string.profile_subtitle),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -111,7 +113,7 @@ fun UserProfileSheet(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Close Sheet"
+                        contentDescription = stringResource(R.string.profile_close)
                     )
                 }
             }
@@ -120,7 +122,7 @@ fun UserProfileSheet(
 
             // Personal Information Section
             Text(
-                text = "Personal Information",
+                text = stringResource(R.string.profile_personal_info),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -133,9 +135,12 @@ fun UserProfileSheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Full Name") },
+                label = { Text(stringResource(R.string.profile_full_name)) },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Filled.Person, contentDescription = "Name")
+                    Icon(
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = stringResource(R.string.profile_name_content_description)
+                    )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -152,9 +157,12 @@ fun UserProfileSheet(
                 OutlinedTextField(
                     value = ageText,
                     onValueChange = { ageText = it.filter { char -> char.isDigit() } },
-                    label = { Text("Age") },
+                    label = { Text(stringResource(R.string.profile_age)) },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Filled.Cake, contentDescription = "Age")
+                        Icon(
+                            imageVector = Icons.Filled.Cake,
+                            contentDescription = stringResource(R.string.profile_age_content_description)
+                        )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f),
@@ -165,9 +173,12 @@ fun UserProfileSheet(
                 OutlinedTextField(
                     value = bloodType,
                     onValueChange = { bloodType = it },
-                    label = { Text("Blood Type") },
+                    label = { Text(stringResource(R.string.profile_blood_type)) },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Filled.Bloodtype, contentDescription = "Blood Type")
+                        Icon(
+                            imageVector = Icons.Filled.Bloodtype,
+                            contentDescription = stringResource(R.string.profile_blood_type_content_description)
+                        )
                     },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
@@ -181,9 +192,12 @@ fun UserProfileSheet(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email Address") },
+                label = { Text(stringResource(R.string.profile_email)) },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Filled.Mail, contentDescription = "Email")
+                    Icon(
+                        imageVector = Icons.Filled.Mail,
+                        contentDescription = stringResource(R.string.profile_email_content_description)
+                    )
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
@@ -195,7 +209,7 @@ fun UserProfileSheet(
 
             // Emergency Contact Section
             Text(
-                text = "Emergency Contact",
+                text = stringResource(R.string.profile_emergency_contact),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -207,10 +221,13 @@ fun UserProfileSheet(
             OutlinedTextField(
                 value = emergencyContactName,
                 onValueChange = { emergencyContactName = it },
-                label = { Text("Contact Name & Relationship") },
-                placeholder = { Text("e.g. John Doe (Spouse)") },
+                label = { Text(stringResource(R.string.profile_contact_name)) },
+                placeholder = { Text(stringResource(R.string.profile_contact_name_placeholder)) },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Filled.ContactPhone, contentDescription = "Emergency Contact Name")
+                    Icon(
+                        imageVector = Icons.Filled.ContactPhone,
+                        contentDescription = stringResource(R.string.profile_contact_name_content_description)
+                    )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -222,9 +239,12 @@ fun UserProfileSheet(
             OutlinedTextField(
                 value = emergencyContactPhone,
                 onValueChange = { emergencyContactPhone = it },
-                label = { Text("Contact Phone Number") },
+                label = { Text(stringResource(R.string.profile_contact_phone)) },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Filled.Phone, contentDescription = "Emergency Phone")
+                    Icon(
+                        imageVector = Icons.Filled.Phone,
+                        contentDescription = stringResource(R.string.profile_contact_phone_content_description)
+                    )
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.fillMaxWidth(),
@@ -236,7 +256,7 @@ fun UserProfileSheet(
 
             // Health & Medical Notes Section
             Text(
-                text = "Allergies & Health Notes",
+                text = stringResource(R.string.profile_health_title),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -249,10 +269,14 @@ fun UserProfileSheet(
             OutlinedTextField(
                 value = allergiesText,
                 onValueChange = { allergiesText = it },
-                label = { Text("Allergies (comma-separated)") },
-                placeholder = { Text("e.g. Penicillin, Sulfa, Peanuts") },
+                label = { Text(stringResource(R.string.profile_allergies)) },
+                placeholder = { Text(stringResource(R.string.profile_allergies_placeholder)) },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Filled.Warning, contentDescription = "Allergies", tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        imageVector = Icons.Filled.Warning,
+                        contentDescription = stringResource(R.string.profile_allergies_content_description),
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -264,10 +288,13 @@ fun UserProfileSheet(
             OutlinedTextField(
                 value = healthNotes,
                 onValueChange = { healthNotes = it },
-                label = { Text("Health Notes & Medical Conditions") },
-                placeholder = { Text("Any specific instructions, conditions, or doctor notes...") },
+                label = { Text(stringResource(R.string.profile_health_notes)) },
+                placeholder = { Text(stringResource(R.string.profile_health_notes_placeholder)) },
                 leadingIcon = {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.Notes, contentDescription = "Health Notes")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Notes,
+                        contentDescription = stringResource(R.string.profile_health_notes_content_description)
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -280,7 +307,7 @@ fun UserProfileSheet(
 
             // Physician / Doctor Info (Optional)
             Text(
-                text = "Primary Physician",
+                text = stringResource(R.string.profile_primary_physician),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -296,9 +323,12 @@ fun UserProfileSheet(
                 OutlinedTextField(
                     value = doctorName,
                     onValueChange = { doctorName = it },
-                    label = { Text("Doctor Name") },
+                    label = { Text(stringResource(R.string.profile_doctor_name)) },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Filled.LocalHospital, contentDescription = "Doctor Name")
+                        Icon(
+                            imageVector = Icons.Filled.LocalHospital,
+                            contentDescription = stringResource(R.string.profile_doctor_name_content_description)
+                        )
                     },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
@@ -308,9 +338,12 @@ fun UserProfileSheet(
                 OutlinedTextField(
                     value = doctorPhone,
                     onValueChange = { doctorPhone = it },
-                    label = { Text("Doctor Phone") },
+                    label = { Text(stringResource(R.string.profile_doctor_phone)) },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Filled.Phone, contentDescription = "Doctor Phone")
+                        Icon(
+                            imageVector = Icons.Filled.Phone,
+                            contentDescription = stringResource(R.string.profile_doctor_phone_content_description)
+                        )
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.weight(1f),
@@ -352,12 +385,12 @@ fun UserProfileSheet(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Save,
-                    contentDescription = "Save Profile",
+                    contentDescription = stringResource(R.string.profile_save),
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Save Profile",
+                    text = stringResource(R.string.profile_save),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     )

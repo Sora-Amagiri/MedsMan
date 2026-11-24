@@ -6,6 +6,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -81,10 +82,10 @@ fun MedsManApp(
                             } else {
                                 destination.unselectedIcon
                             },
-                            contentDescription = destination.label
+                            contentDescription = stringResource(destination.labelRes)
                         )
                     },
-                    label = { Text(destination.label) }
+                    label = { Text(stringResource(destination.labelRes)) }
                 )
             }
         }

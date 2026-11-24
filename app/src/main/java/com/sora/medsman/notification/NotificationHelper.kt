@@ -41,19 +41,19 @@ object NotificationHelper {
 
         val dosageChannel = NotificationChannel(
             CHANNEL_DOSAGE_ID,
-            "Medication Reminders",
+            context.getString(R.string.notification_channel_dosage_name),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = "Reminders to take scheduled medication doses"
+            description = context.getString(R.string.notification_channel_dosage_description)
             enableVibration(true)
         }
 
         val refillChannel = NotificationChannel(
             CHANNEL_REFILL_ID,
-            "Refill Alerts",
+            context.getString(R.string.notification_channel_refill_name),
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
-            description = "Alerts when medication inventory is low"
+            description = context.getString(R.string.notification_channel_refill_description)
         }
 
         notificationManager.createNotificationChannel(dosageChannel)
@@ -267,15 +267,38 @@ object NotificationHelper {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_DOSAGE_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Time for $medicationName")
-            .setContentText("Take ${formatDoseAmount(unitsPerDose, dosage)}.")
+            .setContentTitle(
+                context.getString(R.string.notification_dosage_title, medicationName)
+            )
+            .setContentText(
+                context.getString(
+                    R.string.notification_dosage_text,
+                    formatDoseAmount(
+                        unitsPerDose,
+                        dosage,
+                        context.getString(R.string.dose_units_fallback)
+                    )
+                )
+            )
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
             .setContentIntent(contentPendingIntent)
-            .addAction(0, "Take", takePendingIntent)
-            .addAction(0, "Skip", skipPendingIntent)
-            .addAction(0, "Snooze 15m", snoozePendingIntent)
+            .addAction(
+                0,
+                context.getString(R.string.notification_action_take),
+                takePendingIntent
+            )
+            .addAction(
+                0,
+                context.getString(R.string.notification_action_skip),
+                skipPendingIntent
+            )
+            .addAction(
+                0,
+                context.getString(R.string.notification_action_snooze),
+                snoozePendingIntent
+            )
             .build()
 
         notificationManager.notify(scheduleId.toInt(), notification)
@@ -301,8 +324,12 @@ object NotificationHelper {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_REFILL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Low Refill Alert: $medicationName")
-            .setContentText("Only $currentStock items remaining in inventory. Please request a refill.")
+            .setContentTitle(
+                context.getString(R.string.notification_refill_title, medicationName)
+            )
+            .setContentText(
+                context.getString(R.string.notification_refill_text, currentStock)
+            )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)

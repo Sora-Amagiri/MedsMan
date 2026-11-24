@@ -25,18 +25,22 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sora.medsman.R
 import com.sora.medsman.ui.theme.MedsManTheme
-import java.text.SimpleDateFormat
-import java.util.*
+import com.sora.medsman.util.formatDayHeading
+import java.time.LocalDate
+import java.util.Calendar
 
-enum class NatureScene(val title: String) {
-    MISTY_MOUNTAINS("Misty Mountains"),
-    TRANQUIL_SUNRISE("Tranquil Sunrise"),
-    SERENE_FOREST("Serene Forest")
+enum class NatureScene {
+    MISTY_MOUNTAINS,
+    TRANQUIL_SUNRISE,
+    SERENE_FOREST
 }
 
 @Composable
@@ -50,19 +54,24 @@ fun NatureHeaderCard(
     onLowStockClick: (() -> Unit)? = null
 ) {
     var currentScene by remember { mutableStateOf(NatureScene.MISTY_MOUNTAINS) }
+    val context = LocalContext.current
 
-    val todayDateString = remember {
-        val sdf = SimpleDateFormat("EEEE, MMM d", Locale.getDefault())
-        sdf.format(Date())
+    val todayDateString = remember(context) {
+        formatDayHeading(context, LocalDate.now())
     }
 
-    val greetingText = remember {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    val greeting = stringResource(
         when (hour) {
-            in 5..11 -> "Good Morning"
-            in 12..17 -> "Good Afternoon"
-            else -> "Good Evening"
+            in 5..11 -> R.string.greeting_morning
+            in 12..17 -> R.string.greeting_afternoon
+            else -> R.string.greeting_evening
         }
+    )
+    val greetingText = if (userName.isBlank()) {
+        greeting
+    } else {
+        stringResource(R.string.greeting_with_name, greeting, userName)
     }
 
     val adherencePercentage = if (totalScheduledCount > 0) {
@@ -125,7 +134,7 @@ fun NatureHeaderCard(
                                         NatureScene.TRANQUIL_SUNRISE -> Icons.Filled.WbSunny
                                         NatureScene.SERENE_FOREST -> Icons.Filled.Park
                                     },
-                                    contentDescription = "Change nature scene",
+                                    contentDescription = stringResource(R.string.nature_change_scene),
                                     tint = Color.White,
                                     modifier = Modifier.size(24.dp)
                                 )
@@ -134,7 +143,7 @@ fun NatureHeaderCard(
 
                         Column {
                             Text(
-                                text = "$greetingText, $userName",
+                                text = greetingText,
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -158,7 +167,7 @@ fun NatureHeaderCard(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = "User Profile",
+                            contentDescription = stringResource(R.string.nature_user_profile),
                             tint = Color.White,
                             modifier = Modifier.size(28.dp)
                         )
@@ -207,7 +216,7 @@ fun NatureHeaderCard(
                                     )
                                 )
                                 Text(
-                                    text = "Today",
+                                    text = stringResource(R.string.common_today),
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontSize = 9.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -223,12 +232,16 @@ fun NatureHeaderCard(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = if (takenCount == totalScheduledCount && totalScheduledCount > 0) {
-                                    "✨ All doses taken today!"
-                                } else if (totalScheduledCount == 0) {
-                                    "No doses scheduled today"
-                                } else {
-                                    "$takenCount of $totalScheduledCount doses completed"
+                                text = when {
+                                    takenCount == totalScheduledCount && totalScheduledCount > 0 ->
+                                        stringResource(R.string.nature_all_taken)
+                                    totalScheduledCount == 0 ->
+                                        stringResource(R.string.nature_none_scheduled)
+                                    else -> stringResource(
+                                        R.string.nature_completed,
+                                        takenCount,
+                                        totalScheduledCount
+                                    )
                                 },
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
@@ -237,7 +250,7 @@ fun NatureHeaderCard(
                             )
 
                             Text(
-                                text = "Keep up your tranquil wellness routine",
+                                text = stringResource(R.string.nature_keep_routine),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -255,12 +268,12 @@ fun NatureHeaderCard(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.WarningAmber,
-                                        contentDescription = "Low Stock Alert",
+                                        contentDescription = stringResource(R.string.nature_low_stock_alert),
                                         tint = MaterialTheme.colorScheme.error,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Text(
-                                        text = "$lowStockCount medication(s) low on stock",
+                                        text = stringResource(R.string.nature_low_stock, lowStockCount),
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             color = MaterialTheme.colorScheme.error,
                                             fontWeight = FontWeight.Medium

@@ -25,16 +25,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
+import com.sora.medsman.R
 import com.sora.medsman.data.model.Inventory
 import com.sora.medsman.data.model.Medication
 import com.sora.medsman.ui.viewmodel.InventoryItemWithMed
+import com.sora.medsman.util.formatClockTime
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import java.util.Locale
 
 private val FormOptions = listOf("Tablet", "Capsule", "Liquid", "Injection", "Other")
@@ -48,6 +51,9 @@ private val ColorOptions = listOf(
 )
 private val QuickTimes = listOf("08:00", "12:00", "20:00")
 
+private fun normalizeForm(form: String?): String =
+    FormOptions.find { it.equals(form, ignoreCase = true) } ?: "Tablet"
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MedicationEditorSheet(
@@ -60,19 +66,21 @@ fun MedicationEditorSheet(
 
     val existingMedication = existing?.medication
     val existingInventory = existing?.inventory
+    val defaultUnit = stringResource(R.string.default_unit)
+    val existingUnitLabel = existingInventory?.unit?.let { localizedUnit(it) } ?: defaultUnit
 
     var name by rememberSaveable { mutableStateOf(existingMedication?.name.orEmpty()) }
     var dosage by rememberSaveable { mutableStateOf(existingMedication?.dosage.orEmpty()) }
     var unitsPerDose by rememberSaveable {
         mutableStateOf((existingMedication?.unitsPerDose ?: 1).coerceAtLeast(1))
     }
-    var form by rememberSaveable { mutableStateOf(existingMedication?.form ?: "Tablet") }
+    var form by rememberSaveable { mutableStateOf(normalizeForm(existingMedication?.form)) }
     var instructions by rememberSaveable { mutableStateOf(existingMedication?.instructions.orEmpty()) }
     var colorHex by rememberSaveable { mutableStateOf(existingMedication?.colorHex ?: "#2D6A4F") }
     var stockText by rememberSaveable {
         mutableStateOf((existingInventory?.currentStock ?: 0).toString())
     }
-    var unit by rememberSaveable { mutableStateOf(existingInventory?.unit ?: "pills") }
+    var unit by rememberSaveable { mutableStateOf(existingUnitLabel) }
     var thresholdText by rememberSaveable {
         mutableStateOf((existingInventory?.refillThreshold ?: 5).toString())
     }
@@ -129,10 +137,12 @@ fun MedicationEditorSheet(
     fun buildInventory(): Inventory {
         val base = existingInventory
             ?: Inventory(medicationId = existingMedication?.id ?: 0)
+        val resolvedUnit = unit.trim().ifBlank { defaultUnit }
+        unit = if (resolvedUnit == defaultUnit) "pills" else resolvedUnit
         return base.copy(
             medicationId = existingMedication?.id ?: 0,
             currentStock = stockValue ?: 0,
-            unit = unit.trim().ifBlank { "pills" },
+            unit = if (resolvedUnit == defaultUnit) "pills" else resolvedUnit,
             refillThreshold = thresholdValue ?: 0,
             refillReminderEnabled = refillReminderEnabled
         )
@@ -158,31 +168,37 @@ fun MedicationEditorSheet(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = if (existing == null) "Add medication" else "Edit medication",
+                        text = stringResource(
+                            if (existing == null) R.string.editor_add_title
+                            else R.string.editor_edit_title
+                        ),
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold
                         )
                     )
                     Text(
-                        text = "Details, reminders, and stock in one place",
+                        text = stringResource(R.string.editor_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.Close, contentDescription = "Close")
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.editor_close)
+                    )
                 }
             }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            EditorSectionLabel("Medication")
+            EditorSectionLabel(stringResource(R.string.editor_section_medication))
 
             OutlinedTextField(
                 value = name,
                 onValueChange = { if (it.length <= 80) name = it },
-                label = { Text("Medication name") },
-                placeholder = { Text("e.g. Lisinopril") },
+                label = { Text(stringResource(R.string.editor_name)) },
+                placeholder = { Text(stringResource(R.string.editor_name_placeholder)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -190,20 +206,20 @@ fun MedicationEditorSheet(
             OutlinedTextField(
                 value = dosage,
                 onValueChange = { if (it.length <= 40) dosage = it },
-                label = { Text("Dosage per unit") },
-                placeholder = { Text("e.g. 10 mg") },
+                label = { Text(stringResource(R.string.editor_dosage)) },
+                placeholder = { Text(stringResource(R.string.editor_dosage_placeholder)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
             UnitsPerDoseRow(
                 unitsPerDose = unitsPerDose,
-                unitLabel = unit.trim().ifBlank { "units" },
+                unitLabel = unit.trim().ifBlank { defaultUnit },
                 onUnitsChange = { unitsPerDose = it }
             )
 
             Text(
-                text = "Form",
+                text = stringResource(R.string.editor_form),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -212,7 +228,7 @@ fun MedicationEditorSheet(
                     FilterChip(
                         selected = form == option,
                         onClick = { form = option },
-                        label = { Text(option) }
+                        label = { Text(localizedFormLabel(option)) }
                     )
                 }
             }
@@ -220,14 +236,14 @@ fun MedicationEditorSheet(
             OutlinedTextField(
                 value = instructions,
                 onValueChange = { if (it.length <= 200) instructions = it },
-                label = { Text("Instructions (optional)") },
-                placeholder = { Text("e.g. Take with breakfast") },
+                label = { Text(stringResource(R.string.editor_instructions)) },
+                placeholder = { Text(stringResource(R.string.editor_instructions_placeholder)) },
                 minLines = 2,
                 maxLines = 3,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            EditorSectionLabel("Appearance")
+            EditorSectionLabel(stringResource(R.string.editor_section_appearance))
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 ColorOptions.forEach { hex ->
@@ -239,11 +255,11 @@ fun MedicationEditorSheet(
                 }
             }
 
-            EditorSectionLabel("Reminder times")
+            EditorSectionLabel(stringResource(R.string.editor_section_reminder_times))
 
             if (reminderTimes.isEmpty()) {
                 Text(
-                    text = "No reminders set. This medication will be tracked as needed.",
+                    text = stringResource(R.string.editor_no_reminders),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -253,14 +269,18 @@ fun MedicationEditorSheet(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     reminderTimes.forEach { time ->
+                        val displayTime = displayTime(time, context)
                         InputChip(
                             selected = true,
                             onClick = { reminderTimes = reminderTimes - time },
-                            label = { Text(displayTime(time, is24HourFormat)) },
+                            label = { Text(displayTime) },
                             trailingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = "Remove ${displayTime(time, is24HourFormat)}",
+                                    contentDescription = stringResource(
+                                        R.string.editor_remove_time,
+                                        displayTime
+                                    ),
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -280,7 +300,7 @@ fun MedicationEditorSheet(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Choose time")
+                Text(stringResource(R.string.editor_choose_time))
             }
 
             val quickTimes = QuickTimes.filter { it !in reminderTimes }
@@ -289,13 +309,20 @@ fun MedicationEditorSheet(
                     quickTimes.forEach { time ->
                         AssistChip(
                             onClick = { addReminderTime(time) },
-                            label = { Text("+ ${displayTime(time, is24HourFormat)}") }
+                            label = {
+                                Text(
+                                    stringResource(
+                                        R.string.editor_quick_add_time,
+                                        displayTime(time, context)
+                                    )
+                                )
+                            }
                         )
                     }
                 }
             }
 
-            EditorSectionLabel("Inventory")
+            EditorSectionLabel(stringResource(R.string.editor_section_inventory))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -308,7 +335,7 @@ fun MedicationEditorSheet(
                             stockText = value
                         }
                     },
-                    label = { Text("On hand") },
+                    label = { Text(stringResource(R.string.editor_on_hand)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f)
@@ -316,7 +343,7 @@ fun MedicationEditorSheet(
                 OutlinedTextField(
                     value = unit,
                     onValueChange = { if (it.length <= 12) unit = it },
-                    label = { Text("Unit") },
+                    label = { Text(stringResource(R.string.editor_unit)) },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
@@ -329,10 +356,14 @@ fun MedicationEditorSheet(
                         thresholdText = value
                     }
                 },
-                label = { Text("Refill alert threshold") },
+                label = { Text(stringResource(R.string.editor_refill_threshold)) },
                 supportingText = {
                     Text(
-                        text = "Alert when ${thresholdValue ?: 0} ${unit.ifBlank { "units" }} remain"
+                        text = stringResource(
+                            R.string.editor_refill_threshold_support,
+                            thresholdValue ?: 0,
+                            unit.trim().ifBlank { defaultUnit }
+                        )
                     )
                 },
                 singleLine = true,
@@ -346,11 +377,11 @@ fun MedicationEditorSheet(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Refill reminder",
+                        text = stringResource(R.string.editor_refill_reminder),
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
-                        text = "Notify me when stock reaches the threshold",
+                        text = stringResource(R.string.editor_refill_reminder_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -372,7 +403,7 @@ fun MedicationEditorSheet(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
                 Button(
                     onClick = {
@@ -382,7 +413,12 @@ fun MedicationEditorSheet(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp)
                 ) {
-                    Text(if (existing == null) "Add medication" else "Save changes")
+                    Text(
+                        stringResource(
+                            if (existing == null) R.string.editor_add_title
+                            else R.string.editor_save_changes
+                        )
+                    )
                 }
             }
 
@@ -400,7 +436,7 @@ fun MedicationEditorSheet(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Delete medication")
+                    Text(stringResource(R.string.editor_delete_medication))
                 }
             }
 
@@ -426,13 +462,13 @@ fun MedicationEditorSheet(
                     },
                     enabled = selectedTime !in reminderTimes
                 ) {
-                    Text("Add")
+                    Text(stringResource(R.string.editor_add))
                 }
             },
-            title = { Text("Reminder time") },
+            title = { Text(stringResource(R.string.editor_reminder_time_title)) },
             dismissButton = {
                 TextButton(onClick = { showTimePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {
@@ -450,12 +486,11 @@ fun MedicationEditorSheet(
                     tint = MaterialTheme.colorScheme.error
                 )
             },
-            title = { Text("Delete ${existing.medication.name}?") },
+            title = {
+                Text(stringResource(R.string.editor_delete_title, existing.medication.name))
+            },
             text = {
-                Text(
-                    "This removes the medication, its schedule reminders, and its " +
-                        "inventory. Your dosage history will be kept."
-                )
+                Text(stringResource(R.string.editor_delete_message))
             },
             confirmButton = {
                 TextButton(
@@ -464,12 +499,15 @@ fun MedicationEditorSheet(
                         onDelete()
                     }
                 ) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        stringResource(R.string.common_delete),
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -482,7 +520,8 @@ private fun UnitsPerDoseRow(
     unitLabel: String,
     onUnitsChange: (Int) -> Unit
 ) {
-    val singularUnit = unitLabel.removeSuffix("s").ifBlank { "unit" }
+    val fallbackUnit = stringResource(R.string.default_unit)
+    val singularUnit = unitLabel.removeSuffix("s").ifBlank { fallbackUnit }
     val unitText = if (unitsPerDose == 1) singularUnit else unitLabel
 
     Row(
@@ -491,11 +530,15 @@ private fun UnitsPerDoseRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Units per dose",
+                text = stringResource(R.string.editor_units_per_dose),
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = "Each dose uses $unitsPerDose $unitText. Stock drops by the same amount.",
+                text = stringResource(
+                    R.string.editor_units_per_dose_description,
+                    unitsPerDose,
+                    unitText
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -513,7 +556,7 @@ private fun UnitsPerDoseRow(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Remove,
-                        contentDescription = "Decrease units per dose",
+                        contentDescription = stringResource(R.string.editor_units_decrease),
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -532,7 +575,7 @@ private fun UnitsPerDoseRow(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "Increase units per dose",
+                        contentDescription = stringResource(R.string.editor_units_increase),
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -585,7 +628,7 @@ private fun ColorSwatch(
         if (selected) {
             Icon(
                 imageVector = Icons.Filled.Check,
-                contentDescription = "Selected color",
+                contentDescription = stringResource(R.string.editor_selected_color),
                 tint = Color.White,
                 modifier = Modifier.size(18.dp)
             )
@@ -593,13 +636,15 @@ private fun ColorSwatch(
     }
 }
 
-private fun displayTime(time24: String, is24Hour: Boolean): String = try {
-    LocalTime.parse(time24).format(
-        DateTimeFormatter.ofPattern(
-            if (is24Hour) "HH:mm" else "h:mm a",
-            Locale.getDefault()
-        )
-    )
+private fun displayTime(time24: String, context: android.content.Context): String = try {
+    val time = LocalTime.parse(time24)
+    val calendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, time.hour)
+        set(Calendar.MINUTE, time.minute)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    formatClockTime(context, calendar.timeInMillis)
 } catch (_: Exception) {
     time24
 }

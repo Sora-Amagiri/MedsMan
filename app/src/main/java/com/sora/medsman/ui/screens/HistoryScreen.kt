@@ -3,6 +3,7 @@ package com.sora.medsman.ui.screens
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -30,10 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.sora.medsman.R
 import com.sora.medsman.data.model.HistoryLog
 import com.sora.medsman.data.model.TakeStatus
 import com.sora.medsman.ui.components.NatureBackdrop
@@ -42,12 +46,14 @@ import com.sora.medsman.ui.theme.*
 import com.sora.medsman.ui.viewmodel.AdherenceStats
 import com.sora.medsman.ui.viewmodel.HistoryUiState
 import com.sora.medsman.ui.viewmodel.HistoryViewModel
+import com.sora.medsman.util.HistoryNotes
+import com.sora.medsman.util.formatClockTime
+import com.sora.medsman.util.formatDayHeading
 import com.sora.medsman.util.formatDoseAmount
+import com.sora.medsman.util.formatShortDateTime
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +79,7 @@ fun HistoryScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Medication History",
+                        text = stringResource(R.string.history_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         )
@@ -86,7 +92,7 @@ fun HistoryScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.DeleteSweep,
-                            contentDescription = "Clear history"
+                            contentDescription = stringResource(R.string.history_clear)
                         )
                     }
                 },
@@ -177,12 +183,9 @@ fun HistoryScreen(
                         tint = MaterialTheme.colorScheme.error
                     )
                 },
-                title = { Text("Clear dosage history?") },
+                title = { Text(stringResource(R.string.history_clear_title)) },
                 text = {
-                    Text(
-                        "This permanently removes all dosage records and resets your " +
-                            "adherence statistics. This action cannot be undone."
-                    )
+                    Text(stringResource(R.string.history_clear_message))
                 },
                 confirmButton = {
                     TextButton(
@@ -192,14 +195,14 @@ fun HistoryScreen(
                         }
                     ) {
                         Text(
-                            text = "Clear all",
+                            text = stringResource(R.string.history_clear_all),
                             color = MaterialTheme.colorScheme.error
                         )
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showClearDialog = false }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.common_cancel))
                     }
                 }
             )
@@ -219,6 +222,7 @@ private fun HistoryLogList(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
@@ -249,7 +253,7 @@ private fun HistoryLogList(
             groups.forEach { (date, dayLogs) ->
                 item(key = "header_$date") {
                     DayHeader(
-                        label = dayLabel(date),
+                        label = dayLabel(context, date),
                         count = dayLogs.size,
                         modifier = Modifier.padding(top = 12.dp, bottom = 2.dp)
                     )
@@ -320,7 +324,7 @@ private fun HistorySummaryCard(stats: AdherenceStats) {
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = "Adherence overview",
+                        text = stringResource(R.string.history_overview),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -353,7 +357,11 @@ private fun HistorySummaryCard(stats: AdherenceStats) {
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "${stats.takenCount} of ${stats.totalDoses} doses taken",
+                            text = stringResource(
+                                R.string.history_doses_taken,
+                                stats.takenCount,
+                                stats.totalDoses
+                            ),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -361,9 +369,9 @@ private fun HistorySummaryCard(stats: AdherenceStats) {
                         )
                         Text(
                             text = if (stats.totalDoses == 0) {
-                                "Log a dose to start tracking your rhythm"
+                                stringResource(R.string.history_empty_hint)
                             } else {
-                                "Every mindful dose counts toward your wellness"
+                                stringResource(R.string.history_encouragement)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.85f)
@@ -376,23 +384,23 @@ private fun HistorySummaryCard(stats: AdherenceStats) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     SummaryPill(
-                        label = "Taken",
+                        label = stringResource(R.string.status_taken),
                         count = stats.takenCount,
                         icon = Icons.Rounded.CheckCircle
                     )
                     SummaryPill(
-                        label = "Missed",
+                        label = stringResource(R.string.status_missed),
                         count = stats.missedCount,
                         icon = Icons.Rounded.HighlightOff
                     )
                     SummaryPill(
-                        label = "Skipped",
+                        label = stringResource(R.string.status_skipped),
                         count = stats.skippedCount,
                         icon = Icons.Rounded.SkipNext
                     )
                     if (stats.snoozedCount > 0) {
                         SummaryPill(
-                            label = "Snoozed",
+                            label = stringResource(R.string.status_snoozed),
                             count = stats.snoozedCount,
                             icon = Icons.Filled.MoreTime
                         )
@@ -425,7 +433,7 @@ private fun SummaryPill(
                 modifier = Modifier.size(14.dp)
             )
             Text(
-                text = "$count $label",
+                text = stringResource(R.string.summary_pill_count, count, label),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium)
             )
         }
@@ -448,31 +456,31 @@ private fun AdherenceLegend(stats: AdherenceStats) {
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = "Status breakdown",
+                text = stringResource(R.string.history_status_breakdown),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
             )
 
             LegendRow(
-                label = "Taken",
+                label = stringResource(R.string.status_taken),
                 count = stats.takenCount,
                 total = stats.totalDoses,
                 color = TakenGreen
             )
             LegendRow(
-                label = "Missed",
+                label = stringResource(R.string.status_missed),
                 count = stats.missedCount,
                 total = stats.totalDoses,
                 color = MissedRed
             )
             LegendRow(
-                label = "Skipped",
+                label = stringResource(R.string.status_skipped),
                 count = stats.skippedCount,
                 total = stats.totalDoses,
                 color = SkippedOrange
             )
             if (stats.snoozedCount > 0) {
                 LegendRow(
-                    label = "Snoozed",
+                    label = stringResource(R.string.status_snoozed),
                     count = stats.snoozedCount,
                     total = stats.totalDoses,
                     color = PendingBlue
@@ -484,7 +492,7 @@ private fun AdherenceLegend(stats: AdherenceStats) {
             )
 
             Text(
-                text = "Adherence is the share of logged doses you marked as taken.",
+                text = stringResource(R.string.history_adherence_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -531,11 +539,11 @@ private fun HistoryFilterRow(
     modifier: Modifier = Modifier
 ) {
     val options = listOf(
-        null to "All",
-        TakeStatus.TAKEN to "Taken",
-        TakeStatus.MISSED to "Missed",
-        TakeStatus.SKIPPED to "Skipped",
-        TakeStatus.SNOOZED to "Snoozed"
+        null to stringResource(R.string.history_filter_all),
+        TakeStatus.TAKEN to stringResource(R.string.status_taken),
+        TakeStatus.MISSED to stringResource(R.string.status_missed),
+        TakeStatus.SKIPPED to stringResource(R.string.status_skipped),
+        TakeStatus.SNOOZED to stringResource(R.string.status_snoozed)
     )
 
     LazyRow(
@@ -574,7 +582,7 @@ private fun DayHeader(
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
         )
         Text(
-            text = "$count dose(s)",
+            text = stringResource(R.string.history_day_count, count),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -586,7 +594,17 @@ private fun HistoryLogCard(
     log: HistoryLog,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
     val visual = statusVisual(log.status)
+    val dose = formatDoseAmount(
+        log.unitsPerDose,
+        log.dosage,
+        stringResource(R.string.dose_units_fallback)
+    )
+    val scheduled = stringResource(
+        R.string.history_scheduled,
+        formatClockTime(context, log.scheduledTime)
+    )
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -615,7 +633,7 @@ private fun HistoryLogCard(
             ) {
                 Icon(
                     imageVector = visual.icon,
-                    contentDescription = visual.label,
+                    contentDescription = stringResource(visual.labelRes),
                     tint = visual.color,
                     modifier = Modifier.size(22.dp)
                 )
@@ -641,8 +659,7 @@ private fun HistoryLogCard(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "${formatDoseAmount(log.unitsPerDose, log.dosage)} · " +
-                        "Scheduled ${formatTime(log.scheduledTime)}",
+                    text = "$dose · $scheduled",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -650,7 +667,10 @@ private fun HistoryLogCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Logged ${formatDateTime(log.actionTime)}",
+                    text = stringResource(
+                        R.string.history_logged,
+                        formatShortDateTime(context, log.actionTime)
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
@@ -658,7 +678,7 @@ private fun HistoryLogCard(
                 if (!log.notes.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = log.notes,
+                        text = localizedHistoryNote(log.notes),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -671,7 +691,10 @@ private fun HistoryLogCard(
             ) {
                 Icon(
                     imageVector = Icons.Filled.DeleteOutline,
-                    contentDescription = "Delete ${log.medicationName} log",
+                    contentDescription = stringResource(
+                        R.string.history_delete_log,
+                        log.medicationName
+                    ),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )
@@ -698,7 +721,7 @@ private fun HistoryStatusChip(visual: StatusVisual) {
                 modifier = Modifier.size(12.dp)
             )
             Text(
-                text = visual.label,
+                text = stringResource(visual.labelRes),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -732,18 +755,18 @@ private fun EmptyHistoryState(
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = if (hasAnyHistory) {
-                    "No doses match this filter"
+                    stringResource(R.string.history_empty_filter_title)
                 } else {
-                    "No dosage history yet"
+                    stringResource(R.string.history_empty_title)
                 },
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = if (hasAnyHistory) {
-                    "Try selecting a different status to see more records."
+                    stringResource(R.string.history_empty_filter_message)
                 } else {
-                    "Doses you mark from the Today screen will appear here."
+                    stringResource(R.string.history_empty_message)
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -757,7 +780,7 @@ private data class StatusVisual(
     val color: Color,
     val container: Color,
     val icon: ImageVector,
-    val label: String
+    @StringRes val labelRes: Int
 )
 
 private fun statusVisual(status: TakeStatus): StatusVisual = when (status) {
@@ -765,50 +788,48 @@ private fun statusVisual(status: TakeStatus): StatusVisual = when (status) {
         color = TakenGreen,
         container = TakenGreenContainer,
         icon = Icons.Rounded.CheckCircle,
-        label = "Taken"
+        labelRes = R.string.status_taken
     )
 
     TakeStatus.MISSED -> StatusVisual(
         color = MissedRed,
         container = MissedRedContainer,
         icon = Icons.Rounded.HighlightOff,
-        label = "Missed"
+        labelRes = R.string.status_missed
     )
 
     TakeStatus.SKIPPED -> StatusVisual(
         color = SkippedOrange,
         container = SkippedOrangeContainer,
         icon = Icons.Rounded.SkipNext,
-        label = "Skipped"
+        labelRes = R.string.status_skipped
     )
 
     TakeStatus.SNOOZED -> StatusVisual(
         color = PendingBlue,
         container = PendingBlueContainer,
         icon = Icons.Filled.MoreTime,
-        label = "Snoozed"
+        labelRes = R.string.status_snoozed
     )
 }
 
-private fun formatTime(epochMillis: Long): String =
-    Instant.ofEpochMilli(epochMillis)
-        .atZone(ZoneId.systemDefault())
-        .toLocalTime()
-        .format(DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault()))
+@Composable
+private fun localizedHistoryNote(note: String): String = when (note) {
+    HistoryNotes.TAKEN_VIA_NOTIFICATION ->
+        stringResource(R.string.history_note_taken_notification)
+    HistoryNotes.SKIPPED_VIA_NOTIFICATION ->
+        stringResource(R.string.history_note_skipped_notification)
+    HistoryNotes.SNOOZED_15_MIN ->
+        stringResource(R.string.history_note_snoozed)
+    else -> note
+}
 
-private fun formatDateTime(epochMillis: Long): String =
-    Instant.ofEpochMilli(epochMillis)
-        .atZone(ZoneId.systemDefault())
-        .format(DateTimeFormatter.ofPattern("MMM d, h:mm a", Locale.getDefault()))
-
-private fun dayLabel(date: LocalDate): String {
+private fun dayLabel(context: android.content.Context, date: LocalDate): String {
     val today = LocalDate.now()
     return when (date) {
-        today -> "Today"
-        today.minusDays(1) -> "Yesterday"
-        else -> date.format(
-            DateTimeFormatter.ofPattern("EEEE, MMM d", Locale.getDefault())
-        )
+        today -> context.getString(R.string.common_today)
+        today.minusDays(1) -> context.getString(R.string.common_yesterday)
+        else -> formatDayHeading(context, date)
     }
 }
 

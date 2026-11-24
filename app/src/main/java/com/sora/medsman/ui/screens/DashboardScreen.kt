@@ -3,6 +3,7 @@ package com.sora.medsman.ui.screens
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,12 +57,12 @@ private fun todayTimeMillis(timeOfDay: String): Long {
     }.timeInMillis
 }
 
-enum class ScheduleFilter(val label: String) {
-    ALL("All Today"),
-    PENDING("Pending"),
-    TAKEN("Taken"),
-    MISSED("Missed"),
-    SKIPPED("Skipped")
+enum class ScheduleFilter(@StringRes val labelRes: Int) {
+    ALL(R.string.dashboard_filter_all),
+    PENDING(R.string.dashboard_filter_pending),
+    TAKEN(R.string.dashboard_filter_taken),
+    MISSED(R.string.dashboard_filter_missed),
+    SKIPPED(R.string.dashboard_filter_skipped)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -152,7 +153,7 @@ fun DashboardScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Person,
-                                contentDescription = "User Profile",
+                                contentDescription = stringResource(R.string.dashboard_user_profile),
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -174,7 +175,7 @@ fun DashboardScreen(
             // Nature Canvas Header Card
             item {
                 NatureHeaderCard(
-                    userName = userProfile.name.ifBlank { "Friend" },
+                    userName = userProfile.name,
                     takenCount = dashboardSummary.todayTakenCount,
                     totalScheduledCount = dashboardSummary.todayScheduledCount,
                     lowStockCount = dashboardSummary.lowStockAlertCount,
@@ -188,9 +189,9 @@ fun DashboardScreen(
                 item {
                     ReminderWarningCard(
                         icon = Icons.Filled.NotificationsOff,
-                        title = "Reminders are turned off",
-                        message = "Notifications are blocked, so dose reminders cannot appear. Allow notifications in system settings.",
-                        actionLabel = "Notification settings",
+                        title = stringResource(R.string.reminder_warning_notifications_title),
+                        message = stringResource(R.string.reminder_warning_notifications_message),
+                        actionLabel = stringResource(R.string.reminder_warning_notifications_action),
                         onAction = { openNotificationSettings(context) }
                     )
                 }
@@ -200,9 +201,9 @@ fun DashboardScreen(
                 item {
                     ReminderWarningCard(
                         icon = Icons.Filled.Alarm,
-                        title = "Exact reminders are off",
-                        message = "Android may delay reminders. Allow exact alarms to keep dose times accurate.",
-                        actionLabel = "Allow exact alarms",
+                        title = stringResource(R.string.reminder_warning_exact_title),
+                        message = stringResource(R.string.reminder_warning_exact_message),
+                        actionLabel = stringResource(R.string.reminder_warning_exact_action),
                         onAction = { openExactAlarmSettings(context) }
                     )
                 }
@@ -221,7 +222,7 @@ fun DashboardScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Daily Schedule",
+                            text = stringResource(R.string.dashboard_daily_schedule),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -229,7 +230,10 @@ fun DashboardScreen(
                         )
 
                         Text(
-                            text = "${filteredSchedules.size} item(s)",
+                            text = stringResource(
+                                R.string.dashboard_scheduled_count,
+                                filteredSchedules.size
+                            ),
                             style = MaterialTheme.typography.labelMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -247,7 +251,7 @@ fun DashboardScreen(
                             FilterChip(
                                 selected = selectedFilter == filter,
                                 onClick = { selectedFilter = filter },
-                                label = { Text(filter.label) },
+                                label = { Text(stringResource(filter.labelRes)) },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primary,
@@ -412,7 +416,7 @@ private fun EmptyScheduleState(selectedFilter: ScheduleFilter) {
         ) {
             Icon(
                 imageVector = Icons.Filled.WbSunny,
-                contentDescription = "Empty Schedule",
+                contentDescription = stringResource(R.string.dashboard_empty_icon),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(48.dp)
             )
@@ -421,11 +425,11 @@ private fun EmptyScheduleState(selectedFilter: ScheduleFilter) {
 
             Text(
                 text = when (selectedFilter) {
-                    ScheduleFilter.ALL -> "No doses scheduled for today"
-                    ScheduleFilter.PENDING -> "No pending doses for today!"
-                    ScheduleFilter.TAKEN -> "No doses marked as taken yet"
-                    ScheduleFilter.MISSED -> "No missed doses today"
-                    ScheduleFilter.SKIPPED -> "No skipped doses today"
+                    ScheduleFilter.ALL -> stringResource(R.string.dashboard_empty_all_title)
+                    ScheduleFilter.PENDING -> stringResource(R.string.dashboard_empty_pending_title)
+                    ScheduleFilter.TAKEN -> stringResource(R.string.dashboard_empty_taken_title)
+                    ScheduleFilter.MISSED -> stringResource(R.string.dashboard_empty_missed_title)
+                    ScheduleFilter.SKIPPED -> stringResource(R.string.dashboard_empty_skipped_title)
                 },
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold,
@@ -436,7 +440,7 @@ private fun EmptyScheduleState(selectedFilter: ScheduleFilter) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Enjoy your peaceful day & stay mindful of your wellness.",
+                text = stringResource(R.string.dashboard_empty_subtitle),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

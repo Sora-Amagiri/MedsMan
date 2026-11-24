@@ -1,5 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MedsMan</string>
+    <string name="app_name" translatable="false">MedsMan</string>
+
+    <!-- Common -->
+    <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_save">Save</string>
+    <string name="common_today">Today</string>
+    <string name="common_yesterday">Yesterday</string>
+    <string name="status_taken">Taken</string>
+    <string name="status_missed">Missed</string>
+    <string name="status_skipped">Skipped</string>
+    <string name="status_snoozed">Snoozed</string>
+    <string name="default_unit">pills</string>
+    <string name="dose_units_fallback">units</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">Today</string>
+    <string name="nav_inventory">Inventory</string>
+    <string name="nav_history">History</string>
+
+    <!-- About -->
     <string name="about_title">About MedsMan</string>
     <string name="about_close">Close</string>
     <string name="about_version">Version %1$s</string>
@@ -12,4 +33,199 @@
     <string name="about_license_subtitle">Read the license for this app</string>
     <string name="about_privacy">Your medication data stays on this device. No account and no cloud sync.</string>
     <string name="about_disclaimer">MedsMan is a personal tracking tool, not medical advice. Always follow your clinician\'s instructions.</string>
+
+    <!-- Today dashboard -->
+    <string name="dashboard_user_profile">User Profile</string>
+    <string name="dashboard_daily_schedule">Daily Schedule</string>
+    <string name="dashboard_scheduled_count">%1$d scheduled</string>
+    <string name="dashboard_filter_all">All Today</string>
+    <string name="dashboard_filter_pending">Pending</string>
+    <string name="dashboard_filter_taken">Taken</string>
+    <string name="dashboard_filter_missed">Missed</string>
+    <string name="dashboard_filter_skipped">Skipped</string>
+    <string name="dashboard_empty_all_title">No doses scheduled for today</string>
+    <string name="dashboard_empty_pending_title">No pending doses for today!</string>
+    <string name="dashboard_empty_icon">Empty schedule</string>
+    <string name="dashboard_empty_taken_title">No doses marked as taken yet</string>
+    <string name="dashboard_empty_missed_title">No missed doses today</string>
+    <string name="dashboard_empty_skipped_title">No skipped doses today</string>
+    <string name="dashboard_empty_subtitle">Enjoy your peaceful day &amp; stay mindful of your wellness.</string>
+    <string name="reminder_warning_notifications_title">Reminders are turned off</string>
+    <string name="reminder_warning_notifications_message">Notifications are blocked, so dose reminders cannot appear. Allow notifications in system settings.</string>
+    <string name="reminder_warning_notifications_action">Notification settings</string>
+    <string name="reminder_warning_exact_title">Exact reminders are off</string>
+    <string name="reminder_warning_exact_message">Android may delay reminders. Allow exact alarms to keep dose times accurate.</string>
+    <string name="reminder_warning_exact_action">Allow exact alarms</string>
+
+    <!-- Dosage schedule card -->
+    <string name="schedule_medication_icon">Medication Icon</string>
+    <string name="schedule_time">Schedule Time</string>
+    <string name="schedule_mark_dose">Mark Dose:</string>
+    <string name="schedule_edit_status">Edit Status</string>
+
+    <!-- Nature header -->
+    <string name="nature_change_scene">Change nature scene</string>
+    <string name="nature_user_profile">User Profile</string>
+    <string name="greeting_morning">Good Morning</string>
+    <string name="greeting_afternoon">Good Afternoon</string>
+    <string name="greeting_evening">Good Evening</string>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="nature_all_taken">✨ All doses taken today!</string>
+    <string name="nature_none_scheduled">No doses scheduled today</string>
+    <string name="nature_completed">Completed %1$d / %2$d</string>
+    <string name="nature_keep_routine">Keep up your tranquil wellness routine</string>
+    <string name="nature_low_stock">%1$d low on stock</string>
+    <string name="nature_low_stock_alert">Low Stock Alert</string>
+
+    <!-- User profile -->
+    <string name="profile_title">User Profile</string>
+    <string name="profile_subtitle">Manage personal details &amp; emergency info</string>
+    <string name="profile_avatar">User Avatar</string>
+    <string name="profile_close">Close Sheet</string>
+    <string name="profile_personal_info">Personal Information</string>
+    <string name="profile_full_name">Full Name</string>
+    <string name="profile_name_content_description">Name</string>
+    <string name="profile_age">Age</string>
+    <string name="profile_age_content_description">Age</string>
+    <string name="profile_blood_type">Blood Type</string>
+    <string name="profile_blood_type_content_description">Blood Type</string>
+    <string name="profile_email">Email Address</string>
+    <string name="profile_email_content_description">Email</string>
+    <string name="profile_emergency_contact">Emergency Contact</string>
+    <string name="profile_contact_name">Contact Name &amp; Relationship</string>
+    <string name="profile_contact_name_placeholder">e.g. John Doe (Spouse)</string>
+    <string name="profile_contact_name_content_description">Emergency Contact Name</string>
+    <string name="profile_contact_phone">Contact Phone Number</string>
+    <string name="profile_contact_phone_content_description">Emergency Phone</string>
+    <string name="profile_health_title">Allergies &amp; Health Notes</string>
+    <string name="profile_allergies">Allergies (comma-separated)</string>
+    <string name="profile_allergies_placeholder">e.g. Penicillin, Sulfa, Peanuts</string>
+    <string name="profile_allergies_content_description">Allergies</string>
+    <string name="profile_health_notes">Health Notes &amp; Medical Conditions</string>
+    <string name="profile_health_notes_placeholder">Any specific instructions, conditions, or doctor notes...</string>
+    <string name="profile_health_notes_content_description">Health Notes</string>
+    <string name="profile_primary_physician">Primary Physician</string>
+    <string name="profile_doctor_name">Doctor Name</string>
+    <string name="profile_doctor_name_content_description">Doctor Name</string>
+    <string name="profile_doctor_phone">Doctor Phone</string>
+    <string name="profile_doctor_phone_content_description">Doctor Phone</string>
+    <string name="profile_save">Save Profile</string>
+
+    <!-- Medication editor -->
+    <string name="editor_add_title">Add medication</string>
+    <string name="editor_edit_title">Edit medication</string>
+    <string name="editor_subtitle">Details, reminders, and stock in one place</string>
+    <string name="editor_close">Close</string>
+    <string name="editor_section_medication">Medication</string>
+    <string name="editor_section_appearance">Appearance</string>
+    <string name="editor_section_reminder_times">Reminder times</string>
+    <string name="editor_section_inventory">Inventory</string>
+    <string name="editor_name">Medication name</string>
+    <string name="editor_name_placeholder">e.g. Lisinopril</string>
+    <string name="editor_dosage">Dosage per unit</string>
+    <string name="editor_dosage_placeholder">e.g. 10 mg</string>
+    <string name="editor_units_per_dose">Units per dose</string>
+    <string name="editor_units_per_dose_description">Each dose uses %1$d %2$s. Stock drops by the same amount.</string>
+    <string name="editor_units_decrease">Decrease units per dose</string>
+    <string name="editor_units_increase">Increase units per dose</string>
+    <string name="editor_form">Form</string>
+    <string name="form_tablet">Tablet</string>
+    <string name="form_capsule">Capsule</string>
+    <string name="form_liquid">Liquid</string>
+    <string name="form_injection">Injection</string>
+    <string name="form_other">Other</string>
+    <string name="editor_instructions">Instructions (optional)</string>
+    <string name="editor_instructions_placeholder">e.g. Take with breakfast</string>
+    <string name="editor_no_reminders">No reminders set. This medication will be tracked as needed.</string>
+    <string name="editor_remove_time">Remove %1$s</string>
+    <string name="editor_choose_time">Choose time</string>
+    <string name="editor_quick_add_time">+ %1$s</string>
+    <string name="editor_on_hand">On hand</string>
+    <string name="editor_unit">Unit</string>
+    <string name="editor_refill_threshold">Refill alert threshold</string>
+    <string name="editor_refill_threshold_support">Alert below %1$d %2$s</string>
+    <string name="editor_refill_reminder">Refill reminder</string>
+    <string name="editor_refill_reminder_description">Notify me when stock reaches the threshold</string>
+    <string name="editor_save_changes">Save changes</string>
+    <string name="editor_delete_medication">Delete medication</string>
+    <string name="editor_add">Add</string>
+    <string name="editor_reminder_time_title">Reminder time</string>
+    <string name="editor_delete_title">Delete %1$s?</string>
+    <string name="editor_delete_message">This removes the medication, its schedule reminders, and its inventory. Your dosage history will be kept.</string>
+    <string name="editor_selected_color">Selected color</string>
+
+    <!-- Inventory -->
+    <string name="inventory_title">Pill Inventory</string>
+    <string name="inventory_add_medication">Add medication</string>
+    <string name="inventory_cabinet_title">Your medicine cabinet</string>
+    <string name="inventory_summary">On hand: %1$d · Medications: %2$d</string>
+    <string name="inventory_tracked">%1$d tracked</string>
+    <string name="inventory_low_stock_count">%1$d low on stock</string>
+    <string name="inventory_all_stocked">All stocked up</string>
+    <string name="inventory_your_medications">Your medications</string>
+    <string name="inventory_low_stock_banner_title">Time to refill</string>
+    <string name="inventory_low_stock_banner_message">At or below the reorder threshold: %1$d</string>
+    <string name="inventory_refill_alert">Refill alert</string>
+    <string name="inventory_low_stock">Low stock</string>
+    <string name="inventory_stocked">Stocked</string>
+    <string name="inventory_edit_medication">Edit %1$s</string>
+    <string name="inventory_per_dose">%1$d %2$s per dose</string>
+    <string name="inventory_refill_alert_at">Refill alert at %1$d %2$s</string>
+    <string name="inventory_decrease_stock">Decrease stock for %1$s</string>
+    <string name="inventory_increase_stock">Increase stock for %1$s</string>
+    <string name="inventory_empty_title">No medications tracked yet</string>
+    <string name="inventory_empty_message">Add a medication to start monitoring your supply.</string>
+    <string name="inventory_settings">Settings</string>
+    <string name="inventory_refill">Refill</string>
+    <string name="inventory_refill_title">Refill %1$s</string>
+    <string name="inventory_current_stock">Current stock: %1$d %2$s</string>
+    <string name="inventory_amount_to_add">Amount to add</string>
+    <string name="inventory_new_total">New total: %1$d %2$s</string>
+    <string name="inventory_add_stock">Add stock</string>
+    <string name="inventory_stock_settings">Stock settings</string>
+    <string name="inventory_alert_when">Alert below %1$d %2$s</string>
+    <string name="inventory_refill_reminder">Refill reminder</string>
+    <string name="inventory_refill_reminder_description">Notify me when stock is low</string>
+    <string name="inventory_pharmacy">Pharmacy (optional)</string>
+    <string name="inventory_pharmacy_phone">Pharmacy phone (optional)</string>
+
+    <!-- History -->
+    <string name="history_title">Medication History</string>
+    <string name="history_clear">Clear history</string>
+    <string name="history_clear_title">Clear dosage history?</string>
+    <string name="history_clear_message">This permanently removes all dosage records and resets your adherence statistics. This action cannot be undone.</string>
+    <string name="history_clear_all">Clear all</string>
+    <string name="history_overview">Adherence overview</string>
+    <string name="history_doses_taken">Taken %1$d / %2$d</string>
+    <string name="history_empty_hint">Log a dose to start tracking your rhythm</string>
+    <string name="history_encouragement">Every mindful dose counts toward your wellness</string>
+    <string name="history_status_breakdown">Status breakdown</string>
+    <string name="history_adherence_note">Adherence is the share of logged doses you marked as taken.</string>
+    <string name="history_filter_all">All</string>
+    <string name="summary_pill_count">%1$d %2$s</string>
+    <string name="history_day_count">Logged: %1$d</string>
+    <string name="history_scheduled">Scheduled %1$s</string>
+    <string name="history_logged">Logged %1$s</string>
+    <string name="history_delete_log">Delete %1$s log</string>
+    <string name="history_empty_filter_title">No doses match this filter</string>
+    <string name="history_empty_title">No dosage history yet</string>
+    <string name="history_empty_filter_message">Try selecting a different status to see more records.</string>
+    <string name="history_empty_message">Doses you mark from the Today screen will appear here.</string>
+    <string name="history_note_taken_notification">Taken via notification</string>
+    <string name="history_note_skipped_notification">Skipped via notification</string>
+    <string name="history_note_snoozed">Snoozed 15 min</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_dosage_name">Medication Reminders</string>
+    <string name="notification_channel_dosage_description">Reminders to take scheduled medication doses</string>
+    <string name="notification_channel_refill_name">Refill Alerts</string>
+    <string name="notification_channel_refill_description">Alerts when medication inventory is low</string>
+    <string name="notification_dosage_title">Time for %1$s</string>
+    <string name="notification_dosage_text">Take %1$s.</string>
+    <string name="notification_action_take">Take</string>
+    <string name="notification_action_skip">Skip</string>
+    <string name="notification_action_snooze">Snooze 15m</string>
+    <string name="notification_refill_title">Low Refill Alert: %1$s</string>
+    <string name="notification_refill_text">Only %1$d left in stock. Please request a refill.</string>
+    <string name="notification_default_medication_name">Medication</string>
 </resources>

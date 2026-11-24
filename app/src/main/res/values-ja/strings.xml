@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common -->
+    <string name="common_cancel">キャンセル</string>
+    <string name="common_delete">削除</string>
+    <string name="common_save">保存</string>
+    <string name="common_today">今日</string>
+    <string name="common_yesterday">昨日</string>
+    <string name="status_taken">服用済み</string>
+    <string name="status_missed">未服用</string>
+    <string name="status_skipped">スキップ</string>
+    <string name="status_snoozed">スヌーズ</string>
+    <string name="default_unit">錠</string>
+    <string name="dose_units_fallback">単位</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">今日</string>
+    <string name="nav_inventory">在庫</string>
+    <string name="nav_history">履歴</string>
+
+    <!-- About -->
+    <string name="about_title">MedsManについて</string>
+    <string name="about_close">閉じる</string>
+    <string name="about_version">バージョン %1$s</string>
+    <string name="about_description">毎日の服薬、在庫、補充アラート、服薬履歴をまとめて管理できる、ローカル優先の穏やかな服薬管理アプリです。</string>
+    <string name="about_view_source">GitHubでソースを見る</string>
+    <string name="about_view_source_subtitle">コード、リリース、ドキュメントを見る</string>
+    <string name="about_report_issue">問題を報告</string>
+    <string name="about_report_issue_subtitle">不具合の報告や改善提案</string>
+    <string name="about_license">Apache License 2.0</string>
+    <string name="about_license_subtitle">このアプリのライセンスを読む</string>
+    <string name="about_privacy">服薬データはこの端末内に保存されます。アカウントもクラウド同期もありません。</string>
+    <string name="about_disclaimer">MedsManは個人の記録を支援するツールであり、医療上のアドバイスではありません。必ず医師の指示に従ってください。</string>
+
+    <!-- Today dashboard -->
+    <string name="dashboard_user_profile">プロフィール</string>
+    <string name="dashboard_daily_schedule">今日の服用予定</string>
+    <string name="dashboard_scheduled_count">%1$d件</string>
+    <string name="dashboard_filter_all">今日のすべて</string>
+    <string name="dashboard_filter_pending">未対応</string>
+    <string name="dashboard_filter_taken">服用済み</string>
+    <string name="dashboard_filter_missed">未服用</string>
+    <string name="dashboard_filter_skipped">スキップ</string>
+    <string name="dashboard_empty_all_title">今日の服用予定はありません</string>
+    <string name="dashboard_empty_pending_title">今日は未対応の服用がありません</string>
+    <string name="dashboard_empty_icon">服用予定なし</string>
+    <string name="dashboard_empty_taken_title">服用済みの記録はまだありません</string>
+    <string name="dashboard_empty_missed_title">今日は未服用の記録がありません</string>
+    <string name="dashboard_empty_skipped_title">今日はスキップした記録がありません</string>
+    <string name="dashboard_empty_subtitle">穏やかな一日をお過ごしください。体調を大切に。</string>
+    <string name="reminder_warning_notifications_title">リマインダーがオフになっています</string>
+    <string name="reminder_warning_notifications_message">通知がブロックされているため、服薬リマインダーを表示できません。端末の設定で通知を許可してください。</string>
+    <string name="reminder_warning_notifications_action">通知設定</string>
+    <string name="reminder_warning_exact_title">正確なアラームが許可されていません</string>
+    <string name="reminder_warning_exact_message">Androidがリマインダーを遅らせる場合があります。正確なアラームを許可すると、服用時刻どおりに通知されます。</string>
+    <string name="reminder_warning_exact_action">正確なアラームを許可</string>
+
+    <!-- Dosage schedule card -->
+    <string name="schedule_medication_icon">お薬のアイコン</string>
+    <string name="schedule_time">服用予定時刻</string>
+    <string name="schedule_mark_dose">服用を記録：</string>
+    <string name="schedule_edit_status">ステータスを変更</string>
+
+    <!-- Nature header -->
+    <string name="nature_change_scene">風景を切り替える</string>
+    <string name="nature_user_profile">プロフィール</string>
+    <string name="greeting_morning">おはようございます</string>
+    <string name="greeting_afternoon">こんにちは</string>
+    <string name="greeting_evening">こんばんは</string>
+    <string name="greeting_with_name">%1$s、%2$sさん</string>
+    <string name="nature_all_taken">✨ 今日の分はすべて服用済みです！</string>
+    <string name="nature_none_scheduled">今日の服用予定はありません</string>
+    <string name="nature_completed">%2$d回中%1$d回服用済み</string>
+    <string name="nature_keep_routine">この調子で穏やかな習慣を続けましょう</string>
+    <string name="nature_low_stock">%1$d件のお薬が残りわずかです</string>
+    <string name="nature_low_stock_alert">在庫不足のお知らせ</string>
+
+    <!-- User profile -->
+    <string name="profile_title">プロフィール</string>
+    <string name="profile_subtitle">個人情報と緊急連絡先を管理</string>
+    <string name="profile_avatar">プロフィール画像</string>
+    <string name="profile_close">シートを閉じる</string>
+    <string name="profile_personal_info">基本情報</string>
+    <string name="profile_full_name">氏名</string>
+    <string name="profile_name_content_description">氏名</string>
+    <string name="profile_age">年齢</string>
+    <string name="profile_age_content_description">年齢</string>
+    <string name="profile_blood_type">血液型</string>
+    <string name="profile_blood_type_content_description">血液型</string>
+    <string name="profile_email">メールアドレス</string>
+    <string name="profile_email_content_description">メールアドレス</string>
+    <string name="profile_emergency_contact">緊急連絡先</string>
+    <string name="profile_contact_name">連絡先の名前・続柄</string>
+    <string name="profile_contact_name_placeholder">例：山田太郎（配偶者）</string>
+    <string name="profile_contact_name_content_description">緊急連絡先の名前</string>
+    <string name="profile_contact_phone">連絡先の電話番号</string>
+    <string name="profile_contact_phone_content_description">緊急連絡先の電話番号</string>
+    <string name="profile_health_title">アレルギー・健康メモ</string>
+    <string name="profile_allergies">アレルギー（カンマ区切り）</string>
+    <string name="profile_allergies_placeholder">例：ペニシリン、サルファ剤、ピーナッツ</string>
+    <string name="profile_allergies_content_description">アレルギー</string>
+    <string name="profile_health_notes">健康メモ・持病</string>
+    <string name="profile_health_notes_placeholder">医師からの指示、持病、注意事項など</string>
+    <string name="profile_health_notes_content_description">健康メモ</string>
+    <string name="profile_primary_physician">主治医</string>
+    <string name="profile_doctor_name">医師名</string>
+    <string name="profile_doctor_name_content_description">医師名</string>
+    <string name="profile_doctor_phone">医師の電話番号</string>
+    <string name="profile_doctor_phone_content_description">医師の電話番号</string>
+    <string name="profile_save">プロフィールを保存</string>
+
+    <!-- Medication editor -->
+    <string name="editor_add_title">お薬を追加</string>
+    <string name="editor_edit_title">お薬を編集</string>
+    <string name="editor_subtitle">詳細・リマインダー・在庫をまとめて管理</string>
+    <string name="editor_close">閉じる</string>
+    <string name="editor_section_medication">お薬の情報</string>
+    <string name="editor_section_appearance">色</string>
+    <string name="editor_section_reminder_times">リマインダー時刻</string>
+    <string name="editor_section_inventory">在庫</string>
+    <string name="editor_name">お薬の名前</string>
+    <string name="editor_name_placeholder">例：リシノプリル</string>
+    <string name="editor_dosage">1単位あたりの用量</string>
+    <string name="editor_dosage_placeholder">例：10 mg</string>
+    <string name="editor_units_per_dose">1回あたりの服用数</string>
+    <string name="editor_units_per_dose_description">1回の服用で%1$d%2$sを使用します。在庫も同じ数だけ減ります。</string>
+    <string name="editor_units_decrease">1回あたりの服用数を減らす</string>
+    <string name="editor_units_increase">1回あたりの服用数を増やす</string>
+    <string name="editor_form">剤形</string>
+    <string name="form_tablet">錠剤</string>
+    <string name="form_capsule">カプセル</string>
+    <string name="form_liquid">液剤</string>
+    <string name="form_injection">注射剤</string>
+    <string name="form_other">その他</string>
+    <string name="editor_instructions">服用方法（任意）</string>
+    <string name="editor_instructions_placeholder">例：朝食後に服用</string>
+    <string name="editor_no_reminders">リマインダーは未設定です。必要に応じて記録できます。</string>
+    <string name="editor_remove_time">%1$sを削除</string>
+    <string name="editor_choose_time">時刻を選択</string>
+    <string name="editor_quick_add_time">+ %1$s</string>
+    <string name="editor_on_hand">現在の在庫</string>
+    <string name="editor_unit">単位</string>
+    <string name="editor_refill_threshold">補充アラートの残り数</string>
+    <string name="editor_refill_threshold_support">残り%1$d%2$sで通知</string>
+    <string name="editor_refill_reminder">補充リマインダー</string>
+    <string name="editor_refill_reminder_description">在庫が設定した残り数になったら通知</string>
+    <string name="editor_save_changes">変更を保存</string>
+    <string name="editor_delete_medication">お薬を削除</string>
+    <string name="editor_add">追加</string>
+    <string name="editor_reminder_time_title">リマインダー時刻</string>
+    <string name="editor_delete_title">%1$sを削除しますか？</string>
+    <string name="editor_delete_message">お薬、服用リマインダー、在庫を削除します。服薬履歴は残ります。</string>
+    <string name="editor_selected_color">選択中の色</string>
+
+    <!-- Inventory -->
+    <string name="inventory_title">お薬の在庫</string>
+    <string name="inventory_add_medication">お薬を追加</string>
+    <string name="inventory_cabinet_title">お薬の保管庫</string>
+    <string name="inventory_summary">在庫 %1$d・お薬 %2$d種類</string>
+    <string name="inventory_tracked">%1$d件を管理中</string>
+    <string name="inventory_low_stock_count">%1$d件が残りわずか</string>
+    <string name="inventory_all_stocked">在庫は十分です</string>
+    <string name="inventory_your_medications">登録中のお薬</string>
+    <string name="inventory_low_stock_banner_title">補充の時期です</string>
+    <string name="inventory_low_stock_banner_message">補充目安以下：%1$d件</string>
+    <string name="inventory_refill_alert">補充アラート</string>
+    <string name="inventory_low_stock">残りわずか</string>
+    <string name="inventory_stocked">在庫あり</string>
+    <string name="inventory_edit_medication">%1$sを編集</string>
+    <string name="inventory_per_dose">1回%1$d%2$s</string>
+    <string name="inventory_refill_alert_at">残り%1$d%2$sで補充通知</string>
+    <string name="inventory_decrease_stock">%1$sの在庫を減らす</string>
+    <string name="inventory_increase_stock">%1$sの在庫を増やす</string>
+    <string name="inventory_empty_title">まだお薬が登録されていません</string>
+    <string name="inventory_empty_message">お薬を追加して、在庫管理を始めましょう。</string>
+    <string name="inventory_settings">設定</string>
+    <string name="inventory_refill">補充</string>
+    <string name="inventory_refill_title">%1$sを補充</string>
+    <string name="inventory_current_stock">現在の在庫：%1$d %2$s</string>
+    <string name="inventory_amount_to_add">追加する数</string>
+    <string name="inventory_new_total">補充後：%1$d %2$s</string>
+    <string name="inventory_add_stock">在庫を追加</string>
+    <string name="inventory_stock_settings">在庫設定</string>
+    <string name="inventory_alert_when">残り%1$d%2$sで通知</string>
+    <string name="inventory_refill_reminder">補充リマインダー</string>
+    <string name="inventory_refill_reminder_description">在庫が少なくなったら通知</string>
+    <string name="inventory_pharmacy">薬局名（任意）</string>
+    <string name="inventory_pharmacy_phone">薬局の電話番号（任意）</string>
+
+    <!-- History -->
+    <string name="history_title">服薬履歴</string>
+    <string name="history_clear">履歴を削除</string>
+    <string name="history_clear_title">服薬履歴を削除しますか？</string>
+    <string name="history_clear_message">すべての服薬記録を削除し、服薬率をリセットします。この操作は取り消せません。</string>
+    <string name="history_clear_all">すべて削除</string>
+    <string name="history_overview">服薬状況の概要</string>
+    <string name="history_doses_taken">%2$d回中%1$d回服用</string>
+    <string name="history_empty_hint">服用を記録して、服薬のリズムを確認しましょう</string>
+    <string name="history_encouragement">1回1回の服用が、あなたの健康につながります</string>
+    <string name="history_status_breakdown">ステータス内訳</string>
+    <string name="history_adherence_note">服薬率は、記録した服用回数のうち「服用済み」にした割合です。</string>
+    <string name="history_filter_all">すべて</string>
+    <string name="summary_pill_count">%2$s %1$d</string>
+    <string name="history_day_count">%1$d回</string>
+    <string name="history_scheduled">予定 %1$s</string>
+    <string name="history_logged">記録 %1$s</string>
+    <string name="history_delete_log">%1$sの記録を削除</string>
+    <string name="history_empty_filter_title">この条件に一致する記録はありません</string>
+    <string name="history_empty_title">まだ服薬履歴がありません</string>
+    <string name="history_empty_filter_message">別のステータスを選ぶと、他の記録を確認できます。</string>
+    <string name="history_empty_message">今日の画面で記録した服用がここに表示されます。</string>
+    <string name="history_note_taken_notification">通知から服用</string>
+    <string name="history_note_skipped_notification">通知からスキップ</string>
+    <string name="history_note_snoozed">15分スヌーズ</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_dosage_name">服薬リマインダー</string>
+    <string name="notification_channel_dosage_description">服用予定時刻をお知らせします</string>
+    <string name="notification_channel_refill_name">補充アラート</string>
+    <string name="notification_channel_refill_description">お薬の在庫が少なくなったときにお知らせします</string>
+    <string name="notification_dosage_title">%1$sの服用時間です</string>
+    <string name="notification_dosage_text">%1$sを服用してください。</string>
+    <string name="notification_action_take">服用</string>
+    <string name="notification_action_skip">スキップ</string>
+    <string name="notification_action_snooze">15分スヌーズ</string>
+    <string name="notification_refill_title">%1$sの補充が必要です</string>
+    <string name="notification_refill_text">在庫が残り%1$d個になりました。補充をご検討ください。</string>
+    <string name="notification_default_medication_name">お薬</string>
+</resources>

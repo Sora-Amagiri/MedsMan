@@ -1,5 +1,7 @@
 package com.sora.medsman.ui.components
 
+import android.content.Context
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.expandVertically
@@ -24,17 +26,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
+import com.sora.medsman.R
 import com.sora.medsman.data.model.Schedule
 import com.sora.medsman.data.model.TakeStatus
 import com.sora.medsman.ui.theme.*
 import com.sora.medsman.ui.viewmodel.DailyScheduleItem
+import com.sora.medsman.util.formatClockTime
 import com.sora.medsman.util.formatDoseAmount
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
 
 @Composable
 fun DosageScheduleCard(
@@ -52,8 +57,9 @@ fun DosageScheduleCard(
         }
     }
 
-    val formattedTime = remember(item.schedule.timeOfDay) {
-        formatTimeOfDay(item.schedule.timeOfDay)
+    val context = LocalContext.current
+    val formattedTime = remember(item.schedule.timeOfDay, context) {
+        formatTimeOfDay(context, item.schedule.timeOfDay)
     }
 
     val currentStatus = item.todayStatus
@@ -108,7 +114,7 @@ fun DosageScheduleCard(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Medication,
-                        contentDescription = "Medication Icon",
+                        contentDescription = stringResource(R.string.schedule_medication_icon),
                         tint = accentColor,
                         modifier = Modifier.size(26.dp)
                     )
@@ -138,7 +144,11 @@ fun DosageScheduleCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = formatDoseAmount(item.unitsPerDose, item.dosage),
+                            text = formatDoseAmount(
+                                item.unitsPerDose,
+                                item.dosage,
+                                stringResource(R.string.dose_units_fallback)
+                            ),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.primary
@@ -153,7 +163,7 @@ fun DosageScheduleCard(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Filled.Schedule,
-                                contentDescription = "Schedule Time",
+                                contentDescription = stringResource(R.string.schedule_time),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(14.dp)
                             )
@@ -193,7 +203,7 @@ fun DosageScheduleCard(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Mark Dose:",
+                        text = stringResource(R.string.schedule_mark_dose),
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -224,12 +234,12 @@ fun DosageScheduleCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Check,
-                                contentDescription = "Taken",
+                                contentDescription = stringResource(R.string.status_taken),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Taken",
+                                text = stringResource(R.string.status_taken),
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.Bold
                                 )
@@ -254,12 +264,12 @@ fun DosageScheduleCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.HighlightOff,
-                                contentDescription = "Missed",
+                                contentDescription = stringResource(R.string.status_missed),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Missed",
+                                text = stringResource(R.string.status_missed),
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.Bold
                                 )
@@ -284,12 +294,12 @@ fun DosageScheduleCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.SkipNext,
-                                contentDescription = "Skipped",
+                                contentDescription = stringResource(R.string.status_skipped),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Skipped",
+                                text = stringResource(R.string.status_skipped),
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.Bold
                                 )
@@ -307,32 +317,29 @@ private fun StatusBadge(
     status: TakeStatus,
     onChangeClick: () -> Unit
 ) {
-    val (badgeBg, badgeFg, icon, label) = when (status) {
-        TakeStatus.TAKEN -> Quadruple(
+    val (badgeBg, badgeFg, icon) = when (status) {
+        TakeStatus.TAKEN -> Triple(
             TakenGreenContainer,
             TakenGreen,
-            Icons.Rounded.CheckCircle,
-            "Taken"
+            Icons.Rounded.CheckCircle
         )
-        TakeStatus.SKIPPED -> Quadruple(
+        TakeStatus.SKIPPED -> Triple(
             SkippedOrangeContainer,
             SkippedOrange,
-            Icons.Rounded.SkipNext,
-            "Skipped"
+            Icons.Rounded.SkipNext
         )
-        TakeStatus.MISSED -> Quadruple(
+        TakeStatus.MISSED -> Triple(
             MissedRedContainer,
             MissedRed,
-            Icons.Rounded.HighlightOff,
-            "Missed"
+            Icons.Rounded.HighlightOff
         )
-        TakeStatus.SNOOZED -> Quadruple(
+        TakeStatus.SNOOZED -> Triple(
             PendingBlueContainer,
             PendingBlue,
-            Icons.Filled.MoreTime,
-            "Snoozed"
+            Icons.Filled.MoreTime
         )
     }
+    val label = stringResource(statusLabelRes(status))
 
     Surface(
         onClick = onChangeClick,
@@ -360,7 +367,7 @@ private fun StatusBadge(
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.Redo,
-                contentDescription = "Edit Status",
+                contentDescription = stringResource(R.string.schedule_edit_status),
                 tint = badgeFg.copy(alpha = 0.7f),
                 modifier = Modifier
                     .padding(start = 2.dp)
@@ -370,14 +377,15 @@ private fun StatusBadge(
     }
 }
 
-private data class Quadruple<A, B, C, D>(
-    val first: A,
-    val second: B,
-    val third: C,
-    val fourth: D
-)
+@StringRes
+private fun statusLabelRes(status: TakeStatus): Int = when (status) {
+    TakeStatus.TAKEN -> R.string.status_taken
+    TakeStatus.MISSED -> R.string.status_missed
+    TakeStatus.SKIPPED -> R.string.status_skipped
+    TakeStatus.SNOOZED -> R.string.status_snoozed
+}
 
-private fun formatTimeOfDay(time24: String): String {
+private fun formatTimeOfDay(context: Context, time24: String): String {
     return try {
         val parts = time24.split(":")
         val hour = parts[0].toInt()
@@ -385,9 +393,10 @@ private fun formatTimeOfDay(time24: String): String {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
-        val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
-        sdf.format(calendar.time)
+        formatClockTime(context, calendar.timeInMillis)
     } catch (_: Exception) {
         time24
     }

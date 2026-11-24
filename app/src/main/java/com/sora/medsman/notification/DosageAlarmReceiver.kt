@@ -3,9 +3,11 @@ package com.sora.medsman.notification
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.sora.medsman.R
 import com.sora.medsman.data.local.MedsManDatabase
 import com.sora.medsman.data.model.TakeStatus
 import com.sora.medsman.data.repository.MedsManRepositoryImpl
+import com.sora.medsman.util.HistoryNotes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,7 +18,8 @@ class DosageAlarmReceiver : BroadcastReceiver() {
         val action = intent.action ?: return
         val medicationId = intent.getLongExtra(NotificationHelper.EXTRA_MEDICATION_ID, -1L)
         val scheduleId = intent.getLongExtra(NotificationHelper.EXTRA_SCHEDULE_ID, -1L)
-        val medicationName = intent.getStringExtra(NotificationHelper.EXTRA_MEDICATION_NAME) ?: "Medication"
+        val medicationName = intent.getStringExtra(NotificationHelper.EXTRA_MEDICATION_NAME)
+            ?: context.getString(R.string.notification_default_medication_name)
         val dosage = intent.getStringExtra(NotificationHelper.EXTRA_DOSAGE) ?: ""
         val unitsPerDose = intent
             .getIntExtra(NotificationHelper.EXTRA_UNITS_PER_DOSE, 1)
@@ -58,7 +61,7 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                             unitsPerDose = unitsPerDose,
                             scheduledTime = originalScheduledTime,
                             status = TakeStatus.TAKEN,
-                            notes = "Taken via notification"
+                            notes = HistoryNotes.TAKEN_VIA_NOTIFICATION
                         )
 
                         // Only alert when this dose actually crosses the refill threshold.
@@ -87,7 +90,7 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                             unitsPerDose = unitsPerDose,
                             scheduledTime = originalScheduledTime,
                             status = TakeStatus.SKIPPED,
-                            notes = "Skipped via notification"
+                            notes = HistoryNotes.SKIPPED_VIA_NOTIFICATION
                         )
                     }
 
@@ -110,7 +113,7 @@ class DosageAlarmReceiver : BroadcastReceiver() {
                             unitsPerDose = unitsPerDose,
                             scheduledTime = originalScheduledTime,
                             status = TakeStatus.SNOOZED,
-                            notes = "Snoozed 15 min"
+                            notes = HistoryNotes.SNOOZED_15_MIN
                         )
                     }
                 }
