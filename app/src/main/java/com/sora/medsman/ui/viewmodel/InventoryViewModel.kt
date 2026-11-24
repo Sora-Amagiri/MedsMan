@@ -118,7 +118,7 @@ class InventoryViewModel(
     ) {
         viewModelScope.launch {
             if (existing == null) {
-                val medicationId = repository.insertMedication(
+                repository.insertMedication(
                     medication = medication,
                     inventory = inventory,
                     schedules = scheduleTimes.distinct().sorted().map { time ->
@@ -129,14 +129,7 @@ class InventoryViewModel(
                         )
                     }
                 )
-                repository.getSchedulesForMedication(medicationId).first().forEach { schedule ->
-                    NotificationHelper.scheduleDosageAlarm(
-                        context = context,
-                        schedule = schedule,
-                        medicationName = medication.name,
-                        dosage = medication.dosage
-                    )
-                }
+                NotificationHelper.rescheduleAllReminders(context)
             } else {
                 val medicationId = existing.medication.id
                 val updatedMedication = medication.copy(id = medicationId)
@@ -188,19 +181,16 @@ class InventoryViewModel(
                         timeOfDay = time,
                         dosageQuantity = updatedMedication.unitsPerDose.toString()
                     )
-                    val scheduleId = if (current != null) {
+                    if (current != null) {
                         repository.updateSchedule(schedule)
-                        schedule.id
                     } else {
                         repository.insertSchedule(schedule)
                     }
-                    NotificationHelper.scheduleDosageAlarm(
-                        context = context,
-                        schedule = schedule.copy(id = scheduleId),
-                        medicationName = updatedMedication.name,
-                        dosage = updatedMedication.dosage
-                    )
                 }
+
+                // Re-arm from stored state so a dose already handled today is
+                // not scheduled again after editing the medication.
+                NotificationHelper.rescheduleAllReminders(context)
             }
         }
     }

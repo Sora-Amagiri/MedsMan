@@ -15,6 +15,8 @@ import com.sora.medsman.data.local.MedsManDatabase
 import com.sora.medsman.data.model.Schedule
 import com.sora.medsman.util.formatDoseAmount
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 
 object NotificationHelper {
@@ -65,12 +67,17 @@ object NotificationHelper {
         context: Context,
         schedule: Schedule,
         medicationName: String,
-        dosage: String
+        dosage: String,
+        skipToday: Boolean = false
     ) {
         if (!schedule.isEnabled || !schedule.reminderEnabled) return
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val triggerTime = calculateNextTriggerTime(schedule.timeOfDay, schedule.daysOfWeek)
+        val triggerTime = calculateNextTriggerTime(
+            timeOfDay = schedule.timeOfDay,
+            daysOfWeek = schedule.daysOfWeek,
+            skipToday = skipToday
+        )
         val unitsPerDose = schedule.dosageQuantity.toIntOrNull()?.coerceAtLeast(1) ?: 1
 
         val intent = Intent(context, DosageAlarmReceiver::class.java).apply {
@@ -102,19 +109,55 @@ object NotificationHelper {
         val schedules = database.scheduleDao().getAllSchedules().first()
         val medications = database.medicationDao().getAllMedications().first()
 
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val todayStart = today.atStartOfDay(zone).toInstant().toEpochMilli()
+        val todayEnd = today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        val todayLogs = database.historyLogDao()
+            .getHistoryLogsForDateRange(todayStart, todayEnd - 1L)
+            .first()
+
         schedules.forEach { schedule ->
             if (!schedule.isEnabled || !schedule.reminderEnabled) return@forEach
             val medication = medications.find { it.id == schedule.medicationId }
                 ?: return@forEach
+            val handledToday = todayLogs.any { log ->
+                log.medicationId == schedule.medicationId &&
+                    isSameTimeOfDay(log.scheduledTime, schedule.timeOfDay)
+            }
             scheduleDosageAlarm(
                 context = context,
                 schedule = schedule.toDomain().copy(
                     dosageQuantity = medication.unitsPerDose.toString()
                 ),
                 medicationName = medication.name,
-                dosage = medication.dosage
+                dosage = medication.dosage,
+                skipToday = handledToday
             )
         }
+    }
+
+    /**
+     * Cancels the reminder for the dose the user just handled in the app and
+     * arms the next occurrence, so today's alarm cannot fire after a Taken,
+     * Missed, or Skipped action.
+     */
+    fun cancelTodayDoseAndArmNext(
+        context: Context,
+        schedule: Schedule,
+        medicationName: String,
+        dosage: String,
+        unitsPerDose: Int,
+        scheduledTime: Long
+    ) {
+        cancelDosageAlarm(context, schedule.id)
+        scheduleDosageAlarm(
+            context = context,
+            schedule = schedule.copy(dosageQuantity = unitsPerDose.toString()),
+            medicationName = medicationName,
+            dosage = dosage,
+            skipToday = isSameLocalDay(scheduledTime, System.currentTimeMillis())
+        )
     }
 
     fun areDosageNotificationsEnabled(context: Context): Boolean {
@@ -376,13 +419,17 @@ object NotificationHelper {
         )
     }
 
-    private fun calculateNextTriggerTime(timeOfDay: String, daysOfWeek: List<Int>): Long {
+    internal fun calculateNextTriggerTime(
+        timeOfDay: String,
+        daysOfWeek: List<Int>,
+        skipToday: Boolean = false,
+        now: Calendar = Calendar.getInstance()
+    ): Long {
         val parts = timeOfDay.split(":")
         val hour = parts.getOrNull(0)?.toIntOrNull() ?: 8
         val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
 
-        val now = Calendar.getInstance()
-        val target = Calendar.getInstance().apply {
+        val target = (now.clone() as Calendar).apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
@@ -390,8 +437,11 @@ object NotificationHelper {
         }
 
         // Use a small margin so a re-arm performed while the current alarm is
-        // firing cannot schedule itself again for the same occurrence.
-        if (target.timeInMillis <= now.timeInMillis + 5_000L) {
+        // firing cannot schedule itself again for the same occurrence. When the
+        // dose was already handled today, always start from tomorrow.
+        if (skipToday) {
+            target.add(Calendar.DAY_OF_YEAR, 1)
+        } else if (target.timeInMillis <= now.timeInMillis + 5_000L) {
             target.add(Calendar.DAY_OF_YEAR, 1)
         }
 
@@ -407,5 +457,21 @@ object NotificationHelper {
         }
 
         return target.timeInMillis
+    }
+
+    private fun isSameTimeOfDay(epochMillis: Long, timeOfDay: String): Boolean {
+        val parts = timeOfDay.split(":")
+        val hour = parts.getOrNull(0)?.toIntOrNull() ?: return false
+        val minute = parts.getOrNull(1)?.toIntOrNull() ?: return false
+        val calendar = Calendar.getInstance().apply { timeInMillis = epochMillis }
+        return calendar.get(Calendar.HOUR_OF_DAY) == hour &&
+            calendar.get(Calendar.MINUTE) == minute
+    }
+
+    private fun isSameLocalDay(firstMillis: Long, secondMillis: Long): Boolean {
+        val first = Calendar.getInstance().apply { timeInMillis = firstMillis }
+        val second = Calendar.getInstance().apply { timeInMillis = secondMillis }
+        return first.get(Calendar.YEAR) == second.get(Calendar.YEAR) &&
+            first.get(Calendar.DAY_OF_YEAR) == second.get(Calendar.DAY_OF_YEAR)
     }
 }

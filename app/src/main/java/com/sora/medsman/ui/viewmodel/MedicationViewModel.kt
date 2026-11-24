@@ -78,15 +78,8 @@ class MedicationViewModel(
             val preparedSchedules = schedules.map {
                 it.copy(dosageQuantity = medication.unitsPerDose.toString())
             }
-            val medId = repository.insertMedication(medication, inventory, preparedSchedules)
-            preparedSchedules.forEach { schedule ->
-                NotificationHelper.scheduleDosageAlarm(
-                    context = context,
-                    schedule = schedule.copy(medicationId = medId),
-                    medicationName = medication.name,
-                    dosage = medication.dosage
-                )
-            }
+            repository.insertMedication(medication, inventory, preparedSchedules)
+            NotificationHelper.rescheduleAllReminders(context)
         }
     }
 

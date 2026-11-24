@@ -13,6 +13,7 @@ interface with hand-drawn tranquil nature scenes.
 
 ### Today
 - Daily schedule cards with **Taken**, **Missed**, and **Skipped** actions
+- Marking a dose handled cancels that day's pending reminder
 - Animated adherence ring and low-stock summary on a nature-artwork header
 - Tap the nature icon to switch between Misty Mountains, Tranquil Sunrise, and Serene Forest
 - Profile sheet for personal, emergency-contact, and doctor information

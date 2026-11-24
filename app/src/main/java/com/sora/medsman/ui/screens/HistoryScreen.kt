@@ -64,6 +64,7 @@ fun HistoryScreen(
     val state by viewModel.uiState.collectAsState()
     val selectedFilter by viewModel.filterStatus.collectAsState()
     var showClearDialog by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
 
     val success = state as? HistoryUiState.Success
     val logs = remember(success) {
@@ -144,7 +145,7 @@ fun HistoryScreen(
                             stats = stats,
                             selectedFilter = selectedFilter,
                             onFilterSelected = viewModel::setFilterStatus,
-                            onDeleteLog = viewModel::deleteLog,
+                            onDeleteLog = { id -> viewModel.deleteLog(id, context) },
                             showSummaryCard = false,
                             contentPadding = PaddingValues(bottom = 24.dp),
                             modifier = Modifier
@@ -159,7 +160,7 @@ fun HistoryScreen(
                         stats = stats,
                         selectedFilter = selectedFilter,
                         onFilterSelected = viewModel::setFilterStatus,
-                        onDeleteLog = viewModel::deleteLog,
+                        onDeleteLog = { id -> viewModel.deleteLog(id, context) },
                         showSummaryCard = true,
                         contentPadding = PaddingValues(
                             start = 16.dp,
@@ -190,7 +191,7 @@ fun HistoryScreen(
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            viewModel.clearAllHistory()
+                            viewModel.clearAllHistory(context)
                             showClearDialog = false
                         }
                     ) {

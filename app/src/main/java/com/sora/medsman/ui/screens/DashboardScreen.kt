@@ -288,7 +288,8 @@ fun DashboardScreen(
                                 unitsPerDose = scheduleItem.unitsPerDose,
                                 scheduledTime = scheduledTimeMillis,
                                 status = newStatus,
-                                context = context
+                                context = context,
+                                schedule = scheduleItem.schedule
                             )
                         }
                     )

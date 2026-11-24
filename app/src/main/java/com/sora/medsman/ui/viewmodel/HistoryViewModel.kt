@@ -1,11 +1,13 @@
 package com.sora.medsman.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.sora.medsman.data.model.HistoryLog
 import com.sora.medsman.data.model.TakeStatus
 import com.sora.medsman.data.repository.MedsManRepository
+import com.sora.medsman.notification.NotificationHelper
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -75,15 +77,21 @@ class HistoryViewModel(
         _filterStatus.value = status
     }
 
-    fun deleteLog(id: Long) {
+    fun deleteLog(id: Long, context: Context? = null) {
         viewModelScope.launch {
             repository.deleteHistoryLog(id)
+            if (context != null) {
+                NotificationHelper.rescheduleAllReminders(context)
+            }
         }
     }
 
-    fun clearAllHistory() {
+    fun clearAllHistory(context: Context? = null) {
         viewModelScope.launch {
             repository.clearHistory()
+            if (context != null) {
+                NotificationHelper.rescheduleAllReminders(context)
+            }
         }
     }
 

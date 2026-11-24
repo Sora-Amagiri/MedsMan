@@ -95,7 +95,8 @@ class ScheduleViewModel(
         scheduledTime: Long,
         status: TakeStatus,
         notes: String? = null,
-        context: Context? = null
+        context: Context? = null,
+        schedule: Schedule? = null
     ) {
         viewModelScope.launch {
             val inventoryBefore = if (context != null && status == TakeStatus.TAKEN) {
@@ -129,6 +130,19 @@ class ScheduleViewModel(
                     )
                 }
             }
+
+            // Today's dose is handled, so remove any pending reminder for it and
+            // arm the next scheduled occurrence instead.
+            if (context != null && schedule != null) {
+                NotificationHelper.cancelTodayDoseAndArmNext(
+                    context = context,
+                    schedule = schedule,
+                    medicationName = medicationName,
+                    dosage = dosage,
+                    unitsPerDose = unitsPerDose,
+                    scheduledTime = scheduledTime
+                )
+            }
         }
     }
 
@@ -138,15 +152,8 @@ class ScheduleViewModel(
             val prepared = schedule.copy(
                 dosageQuantity = (med?.unitsPerDose ?: 1).toString()
             )
-            val scheduleId = repository.insertSchedule(prepared)
-            if (med != null) {
-                NotificationHelper.scheduleDosageAlarm(
-                    context = context,
-                    schedule = prepared.copy(id = scheduleId),
-                    medicationName = med.name,
-                    dosage = med.dosage
-                )
-            }
+            repository.insertSchedule(prepared)
+            NotificationHelper.rescheduleAllReminders(context)
         }
     }
 
@@ -155,15 +162,7 @@ class ScheduleViewModel(
             val updated = schedule.copy(isEnabled = isEnabled)
             repository.updateSchedule(updated)
             if (isEnabled) {
-                val med = repository.getMedicationById(schedule.medicationId).firstOrNull()
-                if (med != null) {
-                    NotificationHelper.scheduleDosageAlarm(
-                        context = context,
-                        schedule = updated,
-                        medicationName = med.name,
-                        dosage = med.dosage
-                    )
-                }
+                NotificationHelper.rescheduleAllReminders(context)
             } else {
                 NotificationHelper.cancelDosageAlarm(context, schedule.id)
             }
